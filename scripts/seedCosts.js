@@ -7,7 +7,9 @@ import { Pool } from 'pg';
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const rows = [];
 
+// Path to your CSV
 const csvPath = path.join(process.cwd(), 'data', 'stockLevels.csv');
+
 fs.createReadStream(csvPath)
   .pipe(csv({
     separator: ';',
@@ -16,7 +18,7 @@ fs.createReadStream(csvPath)
   .on('data', row => rows.push(row))
   .on('end', async () => {
     try {
-      // 1) Ensure the table
+      // 1) Ensure table exists
       await pool.query(`
         CREATE TABLE IF NOT EXISTS item_costs (
           item_name TEXT PRIMARY KEY,
@@ -25,23 +27,39 @@ fs.createReadStream(csvPath)
         );
       `);
 
-      // 2) Figure out column keys
-      const keys   = Object.keys(rows[0] || {});
+      // 2) Determine CSV columns
+      const keys    = Object.keys(rows[0] || {});
       const nameKey = keys.find(k => k.toLowerCase() === 'name');
       const costKey = keys.find(k => k.toLowerCase().includes('cost price'));
       const unitCol = keys.find(k => k.toLowerCase().includes('package unit'));
 
-      // 3) Upsert each valid row
-      for (const r of rows) {
-        const name = (r[nameKey] || '').trim();
-        const cost = parseFloat(r[costKey]);
-        let   unit = (r[unitCol] || '').trim().toLowerCase();
+      // 3) Unit inference
+      const inferUnit = r => {
+        const n = (r[nameKey] || '').toLowerCase();
+        const g = (r['Accounting group'] || '').trim();
+        if (/\d+\s?kg/.test(n) || /\d+\s?g\b/.test(n)) return 'g';
+        if (/\d+\s?l\b/.test(n) || /\d+\s?ml\b/.test(n)) return 'ml';
+        const bev = ['Spirit Bottles','Alkohol','Long Drinks','Mixers','Kegs','Ciders',
+                     'Tap Craft Beer 0,3L','Tap Craft Beer 0,5L','Wein','GIN','Cocktails',
+                     'Whiskey','Soft Drinks','Coffee'];
+        if (bev.includes(g)) return 'ml';
+        return 'pcs';
+      };
 
-        if (!name || isNaN(cost)) {
-          console.warn('Skipping invalid row:', r);
+      // 4) Seed every row (cost defaults to 0)
+      for (const r of rows) {
+        const nameRaw = r[nameKey] || '';
+        const name    = nameRaw.trim();
+        if (!name) {
+          console.warn('Skipping row with no name:', r);
           continue;
         }
-        if (!unit) unit = 'pcs';  // fallback
+
+        let cost = parseFloat(r[costKey]);
+        if (isNaN(cost)) cost = 0;
+
+        let unit = (r[unitCol] || '').trim().toLowerCase();
+        if (!unit) unit = inferUnit(r);
 
         await pool.query(
           `INSERT INTO item_costs(item_name, unit_cost, unit)
