@@ -2,11 +2,19 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
+
+// Resolve __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+// Serve static files from public/
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect to Railway Postgres
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -43,7 +51,15 @@ app.post('/api/entry', async (req, res) => {
   }
 });
 
-// GET /api/entries — list all entries (for Zapier or testing)
+// GET /api/items — list available items and default units
+app.get('/api/items', async (_req, res) => {
+  const { rows } = await db.query(
+    'SELECT item_name AS name, unit AS defaultUnit FROM item_costs ORDER BY item_name'
+  );
+  res.json(rows);
+});
+
+// GET /api/entries — list all entries
 app.get('/api/entries', async (_req, res) => {
   const { rows } = await db.query(
     'SELECT * FROM wastage_entries ORDER BY timestamp DESC'
