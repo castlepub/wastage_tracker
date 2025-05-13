@@ -1,75 +1,92 @@
 // public/main.js
 window.addEventListener('DOMContentLoaded', () => {
-  // Employee list (no Justina)
-  const employees = ["Guy","Dean","Henry","Bethany","Pero","Paddy","Vaile","Nora","Melissa"];
   const empInput = document.getElementById('employee');
   const empList  = document.getElementById('employee-list');
   const itemInput= document.getElementById('item');
   const itemList = document.getElementById('item-list');
   const unitSelect = document.getElementById('unit');
+  const reasonSelect= document.getElementById('reason-select');
+  const reasonOther = document.getElementById('reason-other');
+  const form = document.getElementById('wastage-form');
+  const msg  = document.getElementById('message');
 
-  // Utility: render suggestions
-  function renderList(listEl, items) {
-    listEl.innerHTML = '';
-    items.forEach(text => {
-      const li = document.createElement('li');
-      li.textContent = text;
-      li.addEventListener('click', () => {
-        if (listEl === empList) empInput.value = text;
-        else {
-          itemInput.value = text;
-          // set unit on select
-          const found = window.itemsData.find(i => i.name === text);
-          unitSelect.value = found ? found.defaultUnit : '';
-        }
-        listEl.style.display = 'none';
+  // Employee data (no Justina)
+  const employees = ["Guy","Dean","Henry","Bethany","Pero","Paddy","Vaile","Nora","Melissa"];
+
+  // Utility: setup autocomplete with arrow navigation
+  function setupAutocomplete(inputEl, listEl, data, onSelect) {
+    let currentIndex = -1;
+
+    function updateList(filter) {
+      listEl.innerHTML = '';
+      const matches = data.filter(v => v.toLowerCase().includes(filter.toLowerCase()));
+      matches.forEach(v => {
+        const li = document.createElement('li');
+        li.textContent = v;
+        li.addEventListener('mousedown', () => onSelect(v));
+        listEl.appendChild(li);
       });
-      listEl.appendChild(li);
+      currentIndex = -1;
+      listEl.style.display = matches.length ? 'block' : 'none';
+    }
+
+    inputEl.addEventListener('input', () => updateList(inputEl.value));
+    inputEl.addEventListener('keydown', e => {
+      const items = listEl.querySelectorAll('li');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % items.length;
+        items.forEach((li,i) => li.classList.toggle('highlight', i === currentIndex));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        items.forEach((li,i) => li.classList.toggle('highlight', i === currentIndex));
+      } else if (e.key === 'Enter') {
+        if (currentIndex >= 0) {
+          e.preventDefault();
+          onSelect(items[currentIndex].textContent);
+        }
+      }
     });
-    listEl.style.display = items.length ? 'block' : 'none';
+
+    document.addEventListener('click', e => {
+      if (e.target !== inputEl) listEl.style.display = 'none';
+    });
   }
 
-  // 1) Employee input handling
-  empInput.addEventListener('input', () => {
-    const val = empInput.value.toLowerCase();
-    if (!val) return empList.style.display = 'none';
-    const matches = employees.filter(e => e.toLowerCase().includes(val));
-    renderList(empList, matches);
-  });
-  document.addEventListener('click', e => {
-    if (e.target !== empInput) empList.style.display = 'none';
+  // 1) Employee autocomplete
+  setupAutocomplete(empInput, empList, employees, val => {
+    empInput.value = val;
+    empList.style.display = 'none';
   });
 
-  // 2) Fetch items
+  // 2) Fetch items & setup autocomplete
   window.itemsData = [];
   fetch('/api/items')
     .then(r => r.json())
-    .then(data => window.itemsData = data)
+    .then(data => {
+      itemsData = data;
+      const names = data.map(i => i.name);
+      setupAutocomplete(itemInput, itemList, names, val => {
+        itemInput.value = val;
+        itemList.style.display = 'none';
+        const found = data.find(i => i.name === val);
+        unitSelect.value = found ? found.defaultUnit : '';
+      });
+    })
     .catch(console.error);
 
-  // 3) Item input handling
-  itemInput.addEventListener('input', () => {
-    const val = itemInput.value.toLowerCase();
-    if (!val) return itemList.style.display = 'none';
-    const names = window.itemsData.map(i => i.name);
-    const matches = names.filter(n => n.toLowerCase().includes(val));
-    renderList(itemList, matches);
-  });
-  document.addEventListener('click', e => {
-    if (e.target !== itemInput) itemList.style.display = 'none';
-  });
-
-  // rest of form handlers (reason, submit) unchanged...
-  const reasonSelect = document.getElementById('reason-select');
-  const reasonOther  = document.getElementById('reason-other');
+  // 3) Toggle "Other" reason
   reasonSelect.addEventListener('change', () => {
     if (reasonSelect.value === 'other') {
       reasonOther.style.display = 'block'; reasonOther.required = true;
-    } else { reasonOther.style.display = 'none'; reasonOther.required = false; reasonOther.value = ''; }
+    } else {
+      reasonOther.style.display = 'none'; reasonOther.required = false; reasonOther.value = '';
+    }
   });
-  
-  const form = document.getElementById('wastage-form');
-  const msg  = document.getElementById('message');
+
+  // 4) Form submit
   form.addEventListener('submit', e => {
     e.preventDefault(); msg.textContent = '';
     const reason = reasonSelect.value === 'other' ? reasonOther.value.trim() : reasonSelect.value;
@@ -80,7 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
       unit:         unitSelect.value,
       reason:       reason || null
     };
-    fetch('/api/entry', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+    fetch('/api/entry', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
       .then(r=>r.json()).then(res=>{
         msg.style.color = res.success ? 'green' : 'red';
         msg.textContent = res.success ? '✅ Wastage logged!' : '❌ '+(res.error||'Server error');
