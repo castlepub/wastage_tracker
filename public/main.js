@@ -1,26 +1,29 @@
 // public/main.js
 
-// List of employees
+// 1) Employee list (static)
 const employees = [
   "Guy","Dean","Henry","Bethany","Pero",
   "Paddy","Vaile","Nora","Melissa","Justina"
 ];
 
-const form = document.getElementById('wastage-form');
-const msg  = document.getElementById('message');
-
-// 1) Populate employee datalist
+// Form elements
+const form       = document.getElementById('wastage-form');
+const msg        = document.getElementById('message');
 const empDatalist = document.getElementById('employee-list');
+const itemDatalist = document.getElementById('item-list');
+const unitSelect  = document.getElementById('unit');
+const reasonSelect = document.getElementById('reason-select');
+const reasonOther  = document.getElementById('reason-other');
+
+// 2) Populate employee datalist
 employees.forEach(name => {
   const opt = document.createElement('option');
   opt.value = name;
   empDatalist.appendChild(opt);
 });
 
-// 2) Fetch items and populate item datalist
+// 3) Fetch items & populate item datalist
 let items = [];
-const itemDatalist = document.getElementById('item-list');
-
 fetch('/api/items')
   .then(r => r.json())
   .then(data => {
@@ -31,48 +34,63 @@ fetch('/api/items')
       itemDatalist.appendChild(opt);
     });
   })
-  .catch(() => {
-    console.error('Failed to load items');
-  });
+  .catch(() => console.error('Failed to load items'));
 
-// 3) Update unit when item is selected
-const itemInput = document.getElementById('item');
-itemInput.addEventListener('input', () => {
-  const entry = items.find(i => i.name === itemInput.value);
-  document.getElementById('unit').value = entry ? entry.defaultUnit : '';
+// 4) When selecting an item, set unit to its default
+document.getElementById('item').addEventListener('input', e => {
+  const entry = items.find(i => i.name === e.target.value);
+  unitSelect.value = entry?.defaultUnit || '';
 });
 
-// 4) Handle form submission
+// 5) Toggle “Other” reason input
+reasonSelect.addEventListener('change', e => {
+  if (e.target.value === 'other') {
+    reasonOther.style.display = 'inline-block';
+    reasonOther.required = true;
+  } else {
+    reasonOther.style.display = 'none';
+    reasonOther.required = false;
+    reasonOther.value = '';
+  }
+});
+
+// 6) Handle form submission
 form.addEventListener('submit', e => {
   e.preventDefault();
+  msg.textContent = '';
+
+  // Determine final reason
+  const reason = (reasonSelect.value === 'other')
+    ? reasonOther.value.trim()
+    : reasonSelect.value;
 
   const payload = {
     employeeName: document.getElementById('employee').value,
     itemName:     document.getElementById('item').value,
     quantity:     parseFloat(document.getElementById('quantity').value),
-    unit:         document.getElementById('unit').value,
-    reason:       document.getElementById('reason').value || null
+    unit:         unitSelect.value,
+    reason:       reason || null
   };
 
   fetch('/api/entry', {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body:    JSON.stringify(payload)
   })
     .then(r => r.json())
     .then(res => {
       if (res.success) {
-        msg.textContent = '✅ Wastage logged!';
         msg.style.color = 'green';
+        msg.textContent = '✅ Wastage logged!';
         form.reset();
+        unitSelect.value = '';
       } else {
-        msg.textContent = '❌ ' + (res.error || 'Unknown error');
         msg.style.color = 'red';
+        msg.textContent = '❌ ' + (res.error || 'Server error');
       }
     })
-    .catch(err => {
-      msg.textContent = '❌ Network error';
+    .catch(() => {
       msg.style.color = 'red';
-      console.error(err);
+      msg.textContent = '❌ Network error';
     });
 });
