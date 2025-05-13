@@ -2,28 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wastage Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Castle Pub – Wastage Tracker</title>
 </head>
 <body>
   <h1>🍺 The Castle Pub: Wastage Tracker</h1>
   <form id="wastage-form">
+    <!-- Employee as type-ahead -->
     <label for="employee">Employee:</label>
-    <select id="employee" required></select><br/>
+    <input list="employee-list" id="employee" placeholder="Type to search…" required />
+    <datalist id="employee-list"></datalist>
+    <br/>
 
+    <!-- Item as type-ahead -->
     <label for="item">Item:</label>
-    <select id="item" required></select><br/>
+    <input list="item-list" id="item" placeholder="Type to search…" required />
+    <datalist id="item-list"></datalist>
+    <br/>
 
+    <!-- Quantity + unit -->
     <label for="quantity">Quantity:</label>
     <input type="number" step="any" id="quantity" required />
-    <select id="unit"></select><br/>
+    <input type="text" id="unit" readonly style="width:3em; margin-left:0.5em;" />
+    <br/>
 
+    <!-- Reason -->
     <label for="reason">Reason (optional):</label>
-    <input type="text" id="reason" placeholder="e.g. spoilage" /><br/>
+    <input type="text" id="reason" placeholder="e.g. spoilage" />
+    <br/>
 
     <button type="submit">Log Wastage</button>
   </form>
-  <div id="message"></div>
+
+  <div id="message" style="margin-top:1em;"></div>
+
   <script src="main.js"></script>
 </body>
 </html>
