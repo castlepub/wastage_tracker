@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    // first seed the item_costs table, then launch the server
     "seed:costs": "node scripts/seedCosts.js",
     "start":     "npm run seed:costs && node server.js"
   },
