@@ -1,3 +1,8 @@
+# Updated `public/main.js`
+
+Below is your full `public/main.js` file. Replace your existing file with this to ensure all functionality is correct:
+
+```js
 // public/main.js
 
 // 1) Static employee list
@@ -107,3 +112,4 @@ form.addEventListener('submit', e => {
       msg.style.color = 'red'; msg.textContent = '❌ Network error';
     });
 });
+```
