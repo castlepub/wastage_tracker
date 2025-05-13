@@ -73,13 +73,15 @@ app.get('/api/items', async (_req, res) => {
   }
 });
 
-// GET /api/entries — simplified log retrieval
+// GET /api/entries — wrapped in { entries: [...] }
 app.get('/api/entries', async (_req, res) => {
   try {
-    const { rows } = await db.query(
-      'SELECT id, employee_name, item_name, quantity, unit, reason, timestamp FROM wastage_entries ORDER BY timestamp DESC'
-    );
-    res.json(rows);
+    const { rows } = await db.query(`
+      SELECT id, employee_name, item_name, quantity, unit, reason, timestamp
+      FROM wastage_entries
+      ORDER BY timestamp DESC
+    `);
+    res.json({ entries: rows });  // WRAPPED in 'entries'
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
