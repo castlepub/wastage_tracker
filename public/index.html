@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wastage Tracker</title>
+</head>
+<body>
+  <h1>🍺 The Castle Pub: Wastage Tracker</h1>
+  <form id="wastage-form">
+    <label for="employee">Employee:</label>
+    <select id="employee" required></select><br/>
+
+    <label for="item">Item:</label>
+    <select id="item" required></select><br/>
+
+    <label for="quantity">Quantity:</label>
+    <input type="number" step="any" id="quantity" required />
+    <select id="unit"></select><br/>
+
+    <label for="reason">Reason (optional):</label>
+    <input type="text" id="reason" placeholder="e.g. spoilage" /><br/>
+
+    <button type="submit">Log Wastage</button>
+  </form>
+  <div id="message"></div>
+  <script src="main.js"></script>
+</body>
+</html>
