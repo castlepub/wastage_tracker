@@ -2,7 +2,7 @@
 
 const employees = [
   "Guy","Dean","Henry","Bethany","Pero",
-  "Paddy","Vaile","Nora","Melissa","Justina"
+  "Paddy","Vaile","Nora","Melissa"
 ];
 let items = [];
 
