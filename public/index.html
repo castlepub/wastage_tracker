@@ -23,12 +23,12 @@
 
     <form id="wastage-form">
       <label for="employee">Employee:</label>
-      <input type="text" id="employee" list="employee-list" placeholder="Type to search…" required />
-      <datalist id="employee-list"></datalist>
+      <input type="text" id="employee" placeholder="Type to search…" autocomplete="off" required />
+      <ul id="employee-list" class="datalist"></ul>
 
       <label for="item">Item:</label>
-      <input type="text" id="item" list="item-list" placeholder="Type to search…" required />
-      <datalist id="item-list"></datalist>
+      <input type="text" id="item" placeholder="Type to search…" autocomplete="off" required />
+      <ul id="item-list" class="datalist"></ul>
 
       <label for="quantity">Quantity:</label>
       <input type="number" step="any" id="quantity" placeholder="e.g. 100" required />
@@ -60,3 +60,5 @@
     <div id="message"></div>
   </div>
   <script src="main.js"></script>
+</body>
+</html>
