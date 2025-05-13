@@ -7,14 +7,16 @@ import { Pool } from 'pg';
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const rows = [];
 
-// Read semicolon-delimited CSV, strip BOM from headers
 const csvPath = path.join(process.cwd(), 'data', 'stockLevels.csv');
 fs.createReadStream(csvPath)
-  .pipe(csv({ separator: ';', mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim() }))
+  .pipe(csv({
+    separator: ';',
+    mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim()
+  }))
   .on('data', row => rows.push(row))
   .on('end', async () => {
     try {
-      // 1) Ensure table exists
+      // 1) Ensure the table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS item_costs (
           item_name TEXT PRIMARY KEY,
@@ -23,39 +25,30 @@ fs.createReadStream(csvPath)
         );
       `);
 
-      // 2) Identify CSV columns
-      const sampleKeys = Object.keys(rows[0] || {});
-      const nameKey  = sampleKeys.find(k => k.toLowerCase().includes('name'));
-      const costKey  = sampleKeys.find(k => k.toLowerCase().includes('cost price') || k.toLowerCase().includes('unit cost'));
-      const groupKey = sampleKeys.find(k => k.toLowerCase().includes('accounting group'));
+      // 2) Figure out column keys
+      const keys   = Object.keys(rows[0] || {});
+      const nameKey = keys.find(k => k.toLowerCase() === 'name');
+      const costKey = keys.find(k => k.toLowerCase().includes('cost price'));
+      const unitCol = keys.find(k => k.toLowerCase().includes('package unit'));
 
-      // 3) Infer unit from name or group
-      const inferUnit = r => {
-        const n = (r[nameKey] || '').toLowerCase();
-        const g = r[groupKey] || '';
-        if (/\d+\s?kg/.test(n) || /\d+\s?g\b/.test(n)) return 'g';
-        if (/\d+\s?l\b/.test(n) || /\d+\s?ml\b/.test(n)) return 'ml';
-        const bev = ['Spirit Bottles','Alkohol','Long Drinks','Mixers','Kegs','Ciders',
-                     'Tap Craft Beer 0,3L','Tap Craft Beer 0,5L','Wein','GIN','Cocktails',
-                     'Whiskey','Soft Drinks','Coffee'];
-        if (bev.includes(g)) return 'ml';
-        return 'pcs';
-      };
-
-      // 4) Seed table with valid rows
+      // 3) Upsert each valid row
       for (const r of rows) {
-        const name = r[nameKey]?.trim();
+        const name = (r[nameKey] || '').trim();
         const cost = parseFloat(r[costKey]);
-        const unit = inferUnit(r);
-        if (!name || isNaN(cost) || !unit) {
+        let   unit = (r[unitCol] || '').trim().toLowerCase();
+
+        if (!name || isNaN(cost)) {
           console.warn('Skipping invalid row:', r);
           continue;
         }
+        if (!unit) unit = 'pcs';  // fallback
+
         await pool.query(
-          `INSERT INTO item_costs(item_name,unit_cost,unit)
+          `INSERT INTO item_costs(item_name, unit_cost, unit)
            VALUES($1,$2,$3)
            ON CONFLICT(item_name) DO UPDATE
-             SET unit_cost=EXCLUDED.unit_cost,unit=EXCLUDED.unit;`,
+             SET unit_cost = EXCLUDED.unit_cost,
+                 unit      = EXCLUDED.unit;`,
           [name, cost, unit]
         );
       }
