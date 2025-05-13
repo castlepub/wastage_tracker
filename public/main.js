@@ -3,95 +3,107 @@
 // 1) Static employee list
 const employees = [
   "Guy","Dean","Henry","Bethany","Pero",
-  "Paddy","Vaile","Nora","Melissa"
+  "Paddy","Vaile","Nora","Melissa","Justina"
 ];
 
-// DOM refs
-const empDatalist = document.getElementById('employee-list');
-const itemDatalist= document.getElementById('item-list');
-const empInput    = document.getElementById('employee');
-const itemInput   = document.getElementById('item');
-const unitSelect  = document.getElementById('unit');
+let items = [];
 const form        = document.getElementById('wastage-form');
 const msg         = document.getElementById('message');
-const reasonSelect= document.getElementById('reason-select');
+const unitSel     = document.getElementById('unit');
+const reasonSel   = document.getElementById('reason-select');
 const reasonOther = document.getElementById('reason-other');
 
-// 2) Populate employee datalist
-employees.forEach(name => {
-  const opt = document.createElement('option');
-  opt.value = name;
-  empDatalist.appendChild(opt);
-});
+const empInput  = document.getElementById('employee');
+const empSug    = document.getElementById('employee-suggestions');
+const itemInput = document.getElementById('item');
+const itemSug   = document.getElementById('item-suggestions');
 
-// 3) Fetch items & populate datalist
-let items = [];
-fetch('/api/items')
-  .then(res => res.json())
-  .then(data => {
-    items = data; // array of { name, defaultUnit }
-    data.forEach(({ name }) => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      itemDatalist.appendChild(opt);
+// Helper to show suggestions under an input
+function showSuggestions(inputEl, list, container) {
+  const query = inputEl.value.toLowerCase();
+  container.innerHTML = '';
+  if (!query) { container.style.display = 'none'; return; }
+  const matches = list.filter(v => v.toLowerCase().includes(query));
+  if (!matches.length) { container.style.display = 'none'; return; }
+  matches.forEach(v => {
+    const div = document.createElement('div');
+    div.textContent = v;
+    div.addEventListener('click', () => {
+      inputEl.value = v;
+      container.style.display = 'none';
+      inputEl.dispatchEvent(new Event('input'));
     });
-  })
-  .catch(err => console.error('Failed to load items:', err));
+    container.appendChild(div);
+  });
+  container.style.display = 'block';
+}
 
-// 4) When item input changes, set default unit
-itemInput.addEventListener('input', () => {
-  const found = items.find(i => i.name === itemInput.value);
-  unitSelect.value = found ? found.defaultUnit : '';
+// 2) Populate employee suggestions
+showSuggestions(empInput, employees, empSug);
+empInput.addEventListener('input', () => showSuggestions(empInput, employees, empSug));
+document.addEventListener('click', e => {
+  if (!empSug.contains(e.target) && e.target !== empInput) empSug.style.display = 'none';
 });
 
-// 5) Toggle “Other…” reason field
-reasonSelect.addEventListener('change', () => {
-  if (reasonSelect.value === 'other') {
-    reasonOther.style.display = 'block';
-    reasonOther.required = true;
+// 3) Fetch items & populate item suggestions
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/items')
+    .then(r => r.json())
+    .then(data => { items = data.map(i => i.name); })
+    .catch(() => console.error('Failed to load items'));
+});
+itemInput.addEventListener('input', () => showSuggestions(itemInput, items, itemSug));
+document.addEventListener('click', e => {
+  if (!itemSug.contains(e.target) && e.target !== itemInput) itemSug.style.display = 'none';
+});
+
+// 4) Set default unit when item selected
+itemInput.addEventListener('input', () => {
+  const name = itemInput.value;
+  fetch('/api/items')
+    .then(r => r.json())
+    .then(data => {
+      const found = data.find(i => i.name === name);
+      unitSel.value = found ? found.defaultUnit : '';
+    });
+});
+
+// 5) Toggle "Other" reason input
+reasonSel.addEventListener('change', () => {
+  if (reasonSel.value === 'other') {
+    reasonOther.style.display = 'block'; reasonOther.required = true;
   } else {
-    reasonOther.style.display = 'none';
-    reasonOther.required = false;
-    reasonOther.value = '';
+    reasonOther.style.display = 'none'; reasonOther.required = false; reasonOther.value = '';
   }
 });
 
-// 6) Handle form submission
+// 6) Submit form
 form.addEventListener('submit', e => {
   e.preventDefault();
-  msg.textContent = '';  
-
-  const reason = reasonSelect.value === 'other'
-    ? reasonOther.value.trim()
-    : reasonSelect.value;
-
+  msg.textContent = '';
+  const reason = reasonSel.value === 'other' ? reasonOther.value : reasonSel.value;
   const payload = {
     employeeName: empInput.value,
     itemName:     itemInput.value,
     quantity:     parseFloat(document.getElementById('quantity').value),
-    unit:         unitSelect.value,
+    unit:         unitSel.value,
     reason:       reason || null
   };
-
   fetch('/api/entry', {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type':'application/json'},
     body:    JSON.stringify(payload)
   })
     .then(r => r.json())
     .then(res => {
       if (res.success) {
-        msg.style.color = 'green';
-        msg.textContent = '✅ Wastage logged!';
-        form.reset();
-        unitSelect.value = '';
+        msg.style.color = 'green'; msg.textContent = '✅ Wastage logged!';
+        form.reset(); unitSel.value = '';
       } else {
-        msg.style.color = 'red';
-        msg.textContent = '❌ ' + (res.error || 'Server error');
+        msg.style.color = 'red'; msg.textContent = '❌ ' + (res.error || 'Server error');
       }
     })
     .catch(() => {
-      msg.style.color = 'red';
-      msg.textContent = '❌ Network error';
+      msg.style.color = 'red'; msg.textContent = '❌ Network error';
     });
 });
