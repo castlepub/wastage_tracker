@@ -3,7 +3,7 @@
 // 1) Static employee list
 const employees = [
   "Guy","Dean","Henry","Bethany","Pero",
-  "Paddy","Vaile","Nora","Melissa","Justina"
+  "Paddy","Vaile","Nora","Melissa"
 ];
 
 const form        = document.getElementById('wastage-form');
