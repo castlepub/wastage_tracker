@@ -7,35 +7,50 @@
 </head>
 <body>
   <h1>🍺 The Castle Pub: Wastage Tracker</h1>
+
   <form id="wastage-form">
-    <!-- Employee as type-ahead -->
+    <!-- Employee type-ahead -->
     <label for="employee">Employee:</label>
     <input list="employee-list" id="employee" placeholder="Type to search…" required />
     <datalist id="employee-list"></datalist>
     <br/>
 
-    <!-- Item as type-ahead -->
+    <!-- Item type-ahead -->
     <label for="item">Item:</label>
     <input list="item-list" id="item" placeholder="Type to search…" required />
     <datalist id="item-list"></datalist>
     <br/>
 
-    <!-- Quantity + unit -->
+    <!-- Quantity + Unit select -->
     <label for="quantity">Quantity:</label>
-    <input type="number" step="any" id="quantity" required />
-    <input type="text" id="unit" readonly style="width:3em; margin-left:0.5em;" />
+    <input type="number" step="any" id="quantity" placeholder="e.g. 100" required />
+    <select id="unit" required>
+      <option value="">Unit…</option>
+      <option value="g">g (grams)</option>
+      <option value="kg">kg</option>
+      <option value="ml">ml</option>
+      <option value="l">L</option>
+      <option value="pcs">pcs</option>
+    </select>
     <br/>
 
-    <!-- Reason -->
-    <label for="reason">Reason (optional):</label>
-    <input type="text" id="reason" placeholder="e.g. spoilage" />
+    <!-- Reason with preset options + other -->
+    <label for="reason-select">Reason:</label>
+    <select id="reason-select" required>
+      <option value="">Select reason…</option>
+      <option value="broken">Broken</option>
+      <option value="spillage">Spillage</option>
+      <option value="expired">Expired</option>
+      <option value="prep error">Prep Error</option>
+      <option value="other">Other…</option>
+    </select>
+    <input type="text" id="reason-other" placeholder="Describe…" style="display:none; margin-left:0.5em;" />
     <br/>
 
     <button type="submit">Log Wastage</button>
   </form>
 
   <div id="message" style="margin-top:1em;"></div>
-
   <script src="main.js"></script>
 </body>
 </html>
