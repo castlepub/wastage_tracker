@@ -51,12 +51,29 @@ app.post('/api/entry', async (req, res) => {
   }
 });
 
-// GET /api/items — list available items and default units
-app.get('/api/items', async (_req, res) => {
-  const { rows } = await db.query(
-    'SELECT item_name AS name, unit AS defaultUnit FROM item_costs ORDER BY item_name'
-  );
-  res.json(rows);
+// GET /api/entries — include cost calculations
+app.get('/api/entries', async (_req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        e.id,
+        e.employee_name,
+        e.item_name,
+        e.quantity,
+        e.unit,
+        e.reason,
+        e.timestamp,
+        c.unit_cost,
+        ROUND(e.quantity * c.unit_cost, 2) AS total_cost
+      FROM wastage_entries e
+      LEFT JOIN item_costs c ON e.item_name = c.item_name
+      ORDER BY e.timestamp DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch entries' });
+  }
 });
 
 // GET /api/entries — list all entries
