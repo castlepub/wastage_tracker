@@ -1,56 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>The Castle Pub – Wastage Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    form label {
+      display: block;
+      margin: 0.75rem 0 0.25rem;
+    }
+    form input, form select, form button {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    form button {
+      background: #0077cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    form button:hover {
+      background: #005fa3;
+    }
+    #message {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    img.logo {
+      display: block;
+      margin: 0 auto 1rem;
+      max-width: 150px;
+    }
+  </style>
 </head>
 <body>
-  <h1>🍺 The Castle Pub: Wastage Tracker</h1>
+  <div class="container">
+    <img src="logo.png" alt="The Castle Pub Logo" class="logo" />
+    <h1>Wastage Tracker</h1>
 
-  <form id="wastage-form">
-    <!-- Employee type-ahead -->
-    <label for="employee">Employee:</label>
-    <input list="employee-list" id="employee" placeholder="Type to search…" required />
-    <datalist id="employee-list"></datalist>
-    <br/>
+    <form id="wastage-form">
+      <label for="employee">Employee:</label>
+      <input list="employee-list" id="employee" placeholder="Type to search…" required />
+      <datalist id="employee-list"></datalist>
 
-    <!-- Item type-ahead -->
-    <label for="item">Item:</label>
-    <input list="item-list" id="item" placeholder="Type to search…" required />
-    <datalist id="item-list"></datalist>
-    <br/>
+      <label for="item">Item:</label>
+      <input list="item-list" id="item" placeholder="Type to search…" required />
+      <datalist id="item-list"></datalist>
 
-    <!-- Quantity + Unit select -->
-    <label for="quantity">Quantity:</label>
-    <input type="number" step="any" id="quantity" placeholder="e.g. 100" required />
-    <select id="unit" required>
-      <option value="">Unit…</option>
-      <option value="g">g (grams)</option>
-      <option value="kg">kg</option>
-      <option value="ml">ml</option>
-      <option value="l">L</option>
-      <option value="pcs">pcs</option>
-    </select>
-    <br/>
+      <label for="quantity">Quantity:</label>
+      <input type="number" step="any" id="quantity" placeholder="e.g. 100" required />
 
-    <!-- Reason with preset options + other -->
-    <label for="reason-select">Reason:</label>
-    <select id="reason-select" required>
-      <option value="">Select reason…</option>
-      <option value="broken">Broken</option>
-      <option value="spillage">Spillage</option>
-      <option value="expired">Expired</option>
-      <option value="prep error">Prep Error</option>
-      <option value="other">Other…</option>
-    </select>
-    <input type="text" id="reason-other" placeholder="Describe…" style="display:none; margin-left:0.5em;" />
-    <br/>
+      <label for="unit">Unit:</label>
+      <select id="unit" required>
+        <option value="">Select unit…</option>
+        <option value="g">g (grams)</option>
+        <option value="kg">kg</option>
+        <option value="ml">ml</option>
+        <option value="l">L</option>
+        <option value="pcs">pcs</option>
+      </select>
 
-    <button type="submit">Log Wastage</button>
-  </form>
+      <label for="reason-select">Reason:</label>
+      <select id="reason-select" required>
+        <option value="">Select reason…</option>
+        <option value="broken">Broken</option>
+        <option value="spillage">Spillage</option>
+        <option value="expired">Expired</option>
+        <option value="prep error">Prep Error</option>
+        <option value="other">Other…</option>
+      </select>
+      <input type="text" id="reason-other" placeholder="Describe…" style="display:none;" />
 
-  <div id="message" style="margin-top:1em;"></div>
+      <button type="submit">Log Wastage</button>
+    </form>
+
+    <div id="message"></div>
+  </div>
+
   <script src="main.js"></script>
 </body>
 </html>
