@@ -1,88 +1,90 @@
 // public/main.js
-
 window.addEventListener('DOMContentLoaded', () => {
-  // 1) Static employee list (Justina removed)
-  const employees = [
-    "Guy","Dean","Henry","Bethany","Pero",
-    "Paddy","Vaile","Nora","Melissa"
-  ];
-  const empList = document.getElementById('employee-list');
-  employees.forEach(name => {
-    const opt = document.createElement('option');
-    opt.value = name;
-    empList.appendChild(opt);
-  });
-
-  // 2) Fetch items & populate item datalist
-  let items = [];
+  // Employee list (no Justina)
+  const employees = ["Guy","Dean","Henry","Bethany","Pero","Paddy","Vaile","Nora","Melissa"];
+  const empInput = document.getElementById('employee');
+  const empList  = document.getElementById('employee-list');
+  const itemInput= document.getElementById('item');
   const itemList = document.getElementById('item-list');
-  fetch('/api/items')
-    .then(res => res.json())
-    .then(data => {
-      items = data; // [{ name, defaultUnit }, ...]
-      data.forEach(({ name }) => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        itemList.appendChild(opt);
-      });
-    })
-    .catch(err => console.error('Failed to load items:', err));
-
-  // 3) Set default unit on item selection
-  const itemInput  = document.getElementById('item');
   const unitSelect = document.getElementById('unit');
-  itemInput.addEventListener('input', () => {
-    const found = items.find(i => i.name === itemInput.value);
-    unitSelect.value = found ? found.defaultUnit : '';
+
+  // Utility: render suggestions
+  function renderList(listEl, items) {
+    listEl.innerHTML = '';
+    items.forEach(text => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      li.addEventListener('click', () => {
+        if (listEl === empList) empInput.value = text;
+        else {
+          itemInput.value = text;
+          // set unit on select
+          const found = window.itemsData.find(i => i.name === text);
+          unitSelect.value = found ? found.defaultUnit : '';
+        }
+        listEl.style.display = 'none';
+      });
+      listEl.appendChild(li);
+    });
+    listEl.style.display = items.length ? 'block' : 'none';
+  }
+
+  // 1) Employee input handling
+  empInput.addEventListener('input', () => {
+    const val = empInput.value.toLowerCase();
+    if (!val) return empList.style.display = 'none';
+    const matches = employees.filter(e => e.toLowerCase().includes(val));
+    renderList(empList, matches);
+  });
+  document.addEventListener('click', e => {
+    if (e.target !== empInput) empList.style.display = 'none';
   });
 
-  // 4) Toggle "Other" reason field
+  // 2) Fetch items
+  window.itemsData = [];
+  fetch('/api/items')
+    .then(r => r.json())
+    .then(data => window.itemsData = data)
+    .catch(console.error);
+
+  // 3) Item input handling
+  itemInput.addEventListener('input', () => {
+    const val = itemInput.value.toLowerCase();
+    if (!val) return itemList.style.display = 'none';
+    const names = window.itemsData.map(i => i.name);
+    const matches = names.filter(n => n.toLowerCase().includes(val));
+    renderList(itemList, matches);
+  });
+  document.addEventListener('click', e => {
+    if (e.target !== itemInput) itemList.style.display = 'none';
+  });
+
+  // rest of form handlers (reason, submit) unchanged...
   const reasonSelect = document.getElementById('reason-select');
   const reasonOther  = document.getElementById('reason-other');
   reasonSelect.addEventListener('change', () => {
     if (reasonSelect.value === 'other') {
       reasonOther.style.display = 'block'; reasonOther.required = true;
-    } else {
-      reasonOther.style.display = 'none'; reasonOther.required = false;
-      reasonOther.value = '';
-    }
+    } else { reasonOther.style.display = 'none'; reasonOther.required = false; reasonOther.value = ''; }
   });
-
-  // 5) Submit form
+  
   const form = document.getElementById('wastage-form');
   const msg  = document.getElementById('message');
   form.addEventListener('submit', e => {
-    e.preventDefault();
-    msg.textContent = '';
-
-    const reason = reasonSelect.value === 'other'
-      ? reasonOther.value.trim()
-      : reasonSelect.value;
-
+    e.preventDefault(); msg.textContent = '';
+    const reason = reasonSelect.value === 'other' ? reasonOther.value.trim() : reasonSelect.value;
     const payload = {
-      employeeName: document.getElementById('employee').value,
+      employeeName: empInput.value,
       itemName:     itemInput.value,
       quantity:     parseFloat(document.getElementById('quantity').value),
       unit:         unitSelect.value,
       reason:       reason || null
     };
-
-    fetch('/api/entry', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) {
-          msg.style.color = 'green'; msg.textContent = '✅ Wastage logged!';
-          form.reset(); unitSelect.value = '';
-        } else {
-          msg.style.color = 'red'; msg.textContent = '❌ ' + (res.error || 'Server error');
-        }
-      })
-      .catch(() => {
-        msg.style.color = 'red'; msg.textContent = '❌ Network error';
-      });
+    fetch('/api/entry', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+      .then(r=>r.json()).then(res=>{
+        msg.style.color = res.success ? 'green' : 'red';
+        msg.textContent = res.success ? '✅ Wastage logged!' : '❌ '+(res.error||'Server error');
+        if(res.success){ form.reset(); unitSelect.value=''; }
+      }).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Network error'; });
   });
 });
