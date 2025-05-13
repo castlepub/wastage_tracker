@@ -1,28 +1,27 @@
 // public/main.js
 
-// 1) Employee list (static)
+// 1) Static employee list
 const employees = [
   "Guy","Dean","Henry","Bethany","Pero",
   "Paddy","Vaile","Nora","Melissa","Justina"
 ];
 
-// Form elements
-const form       = document.getElementById('wastage-form');
-const msg        = document.getElementById('message');
+const form        = document.getElementById('wastage-form');
+const msg         = document.getElementById('message');
 const empDatalist = document.getElementById('employee-list');
-const itemDatalist = document.getElementById('item-list');
+const itemDatalist= document.getElementById('item-list');
 const unitSelect  = document.getElementById('unit');
-const reasonSelect = document.getElementById('reason-select');
-const reasonOther  = document.getElementById('reason-other');
+const reasonSelect= document.getElementById('reason-select');
+const reasonOther = document.getElementById('reason-other');
 
-// 2) Populate employee datalist
+// 2) Populate employees datalist
 employees.forEach(name => {
   const opt = document.createElement('option');
   opt.value = name;
   empDatalist.appendChild(opt);
 });
 
-// 3) Fetch items & populate item datalist
+// 3) Fetch items & populate datalist
 let items = [];
 fetch('/api/items')
   .then(r => r.json())
@@ -36,16 +35,16 @@ fetch('/api/items')
   })
   .catch(() => console.error('Failed to load items'));
 
-// 4) When selecting an item, set unit to its default
+// 4) When item changes, set default unit
 document.getElementById('item').addEventListener('input', e => {
   const entry = items.find(i => i.name === e.target.value);
   unitSelect.value = entry?.defaultUnit || '';
 });
 
-// 5) Toggle “Other” reason input
+// 5) Show/hide “Other…” reason input
 reasonSelect.addEventListener('change', e => {
   if (e.target.value === 'other') {
-    reasonOther.style.display = 'inline-block';
+    reasonOther.style.display = 'block';
     reasonOther.required = true;
   } else {
     reasonOther.style.display = 'none';
@@ -54,13 +53,12 @@ reasonSelect.addEventListener('change', e => {
   }
 });
 
-// 6) Handle form submission
+// 6) Submit form
 form.addEventListener('submit', e => {
   e.preventDefault();
   msg.textContent = '';
 
-  // Determine final reason
-  const reason = (reasonSelect.value === 'other')
+  const reason = reasonSelect.value === 'other'
     ? reasonOther.value.trim()
     : reasonSelect.value;
 
@@ -74,7 +72,7 @@ form.addEventListener('submit', e => {
 
   fetch('/api/entry', {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type':'application/json'},
     body:    JSON.stringify(payload)
   })
     .then(r => r.json())
