@@ -16,10 +16,10 @@ app.use(bodyParser.json());
 // Serve static front-end
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connect to your Railway Postgres
+// Connect to Postgres
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Ensure the tables exist
+// Ensure tables exist on startup
 (async () => {
   await db.query(`
     CREATE TABLE IF NOT EXISTS wastage_entries (
@@ -49,8 +49,7 @@ app.post('/api/entry', async (req, res) => {
   const { employeeName, itemName, quantity, unit, reason } = req.body;
   try {
     await db.query(
-      `INSERT INTO wastage_entries
-         (employee_name, item_name, quantity, unit, reason)
+      `INSERT INTO wastage_entries(employee_name, item_name, quantity, unit, reason)
        VALUES ($1,$2,$3,$4,$5)`,
       [employeeName, itemName, quantity, unit, reason || null]
     );
@@ -61,38 +60,29 @@ app.post('/api/entry', async (req, res) => {
   }
 });
 
-// <<< THIS IS THE MISSING ROUTE >>>
-// GET /api/items — return all items for autocomplete
+// GET /api/items — for autocomplete
 app.get('/api/items', async (_req, res) => {
   try {
-    const { rows } = await db.query(`
-      SELECT item_name AS name, unit AS defaultUnit
-      FROM item_costs
-      ORDER BY item_name
-    `);
+    const { rows } = await db.query(
+      'SELECT item_name AS name, unit AS defaultUnit FROM item_costs ORDER BY item_name'
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch items' });
+    res.status(500).json({ error: err.message || 'Failed to fetch items' });
   }
 });
 
-// GET /api/entries — list all entries with cost
+// GET /api/entries — simplified log retrieval
 app.get('/api/entries', async (_req, res) => {
   try {
-    const { rows } = await db.query(`
-      SELECT
-        e.*,
-        c.unit_cost,
-        ROUND(e.quantity * c.unit_cost, 2) AS total_cost
-      FROM wastage_entries e
-      LEFT JOIN item_costs c ON e.item_name = c.item_name
-      ORDER BY e.timestamp DESC
-    `);
+    const { rows } = await db.query(
+      'SELECT id, employee_name, item_name, quantity, unit, reason, timestamp FROM wastage_entries ORDER BY timestamp DESC'
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch entries' });
+    res.status(500).json({ error: err.message });
   }
 });
 
