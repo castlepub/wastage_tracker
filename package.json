@@ -1,16 +1,17 @@
 {
   "name": "castle-wastage-tracker",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
+    // first seed the item_costs table, then launch the server
     "seed:costs": "node scripts/seedCosts.js",
-    "start": "node server.js"
+    "start":     "npm run seed:costs && node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "body-parser": "^1.20.2",
-    "pg": "^8.10.0",
-    "csv-parser": "^3.0.0",
-    "cors": "^2.8.5"
-  },
-  "type": "module"
+    "express":    "^4.18.2",
+    "body-parser":"^1.20.2",
+    "cors":       "^2.8.5",
+    "pg":         "^8.10.0",
+    "csv-parser": "^3.0.0"
+  }
 }
