@@ -1,7 +1,13 @@
-import fetch from 'node-fetch';
-import fs from 'fs';
-import { Dropbox } from 'dropbox';
-import dayjs from 'dayjs';
+// daily-report.js
+const fetch = require('node-fetch');
+const fs = require('fs');
+const { Dropbox } = require('dropbox');
+const dayjs = require('dayjs');
+
+const API_URL = 'https://wastagetracker-production.up.railway.app/api/entries';
+const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
+const DROPBOX_FOLDER = ''; // App folder root ("/Apps/castle-wastage-tracker")
+
 (async () => {
   try {
     const res = await fetch(API_URL);
@@ -30,7 +36,7 @@ import dayjs from 'dayjs';
     console.log('Uploading to:', `/${filename}`);
 
     await dbx.filesUpload({
-      path: `/${filename}`, // uploads to /Apps/castle-wastage-tracker/
+      path: `/${filename}`,
       contents: fileBuffer,
       mode: { '.tag': 'overwrite' },
       autorename: false,
