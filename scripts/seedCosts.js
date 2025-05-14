@@ -1,8 +1,8 @@
 // scripts/seedCosts.js
-import fs from 'fs';
-import path from 'path';
-import csv from 'csv-parser';
-import { Pool } from 'pg';
+const fs = require('fs');
+const path = require('path');
+const csv = require('csv-parser');
+const { Pool } = require('pg');
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const rows = [];
