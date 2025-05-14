@@ -9,18 +9,46 @@
     .container { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width:100%; max-width:400px; position: relative; }
     h1 { text-align: center; margin-bottom: 1rem; }
     form label { display: block; margin: 0.5rem 0 0.25rem; }
-    form input, form select, form button { width: 100%; padding: 0.5rem; font-size: 1rem; margin-bottom: 0.5rem; }
-    form button { background: #0077cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    form input, form select, form button { width: 100%; padding: 0.5rem; font-size: 1rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+    form input:focus, form select:focus { outline: none; border-color: #0077cc; box-shadow: 0 0 0 2px rgba(0,119,204,0.2); }
+    form button { background: #0077cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; }
     form button:hover { background: #005fa3; }
-    #message { text-align: center; margin-top: 1rem; font-weight: bold; }
+    form button:disabled { background: #ccc; cursor: not-allowed; }
+    #message { text-align: center; margin-top: 1rem; font-weight: bold; min-height: 24px; }
     img.logo { display: block; margin: 0 auto 1rem; max-width: 150px; }
-
+    
     /* Autocomplete styles */
     .autocomplete { position: relative; }
-    .datalist { list-style: none; padding: 0; margin: 0; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; max-height: 150px; overflow-y: auto; z-index: 1000; display: none; }
-    .datalist li { padding: 0.5rem; cursor: pointer; }
+    .datalist { list-style: none; padding: 0; margin: 0; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; max-height: 150px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .datalist li { padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; }
     .datalist li.highlight { background: #0077cc; color: #fff; }
     .datalist li:hover { background: #f0f0f0; }
+
+    /* Reset button styles */
+    .reset-button { 
+      background: #f44336 !important; 
+      margin-top: 1rem !important;
+    }
+    .reset-button:hover { 
+      background: #d32f2f !important; 
+    }
+
+    /* Validation styles */
+    input:invalid, select:invalid {
+      border-color: #f44336;
+      background-color: rgba(244,67,54,0.05);
+    }
+    
+    /* Loading state */
+    button[type="submit"]:disabled {
+      position: relative;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 480px) {
+      body { padding: 1rem; }
+      .container { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -42,7 +70,7 @@
       </div>
 
       <label for="quantity">Quantity:</label>
-      <input type="number" step="any" id="quantity" placeholder="e.g. 100" required />
+      <input type="number" step="any" id="quantity" placeholder="e.g. 100" required min="0.01" />
 
       <label for="unit">Unit:</label>
       <select id="unit" required>
