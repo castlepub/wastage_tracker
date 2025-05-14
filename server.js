@@ -94,7 +94,7 @@ app.post('/api/entry', validateWastageEntry, async (req, res) => {
   const { employeeName, itemName, quantity, unit, reason } = req.body;
   
   try {
-    // First check if item exists and validate unit
+    // First check if item exists
     const itemCheck = await db.query(
       'SELECT unit FROM item_costs WHERE item_name = $1',
       [itemName]
@@ -104,13 +104,6 @@ app.post('/api/entry', validateWastageEntry, async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Invalid item name'
-      });
-    }
-
-    if (itemCheck.rows[0].unit !== unit) {
-      return res.status(400).json({
-        success: false,
-        error: `Invalid unit. Expected ${itemCheck.rows[0].unit}`
       });
     }
 
