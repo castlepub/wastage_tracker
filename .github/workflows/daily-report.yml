@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run daily-reports.js
+    - name: Run daily-reports.cjs
       env:
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
-      run: node scripts/daily-reports.js
+      run: node scripts/daily-reports.cjs
