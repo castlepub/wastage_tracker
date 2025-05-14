@@ -170,10 +170,23 @@ window.addEventListener('DOMContentLoaded', () => {
         if (found) {
           unitSelect.value = found.defaultUnit;
           unitSelect.classList.add('touched');
-          // Disable other units to prevent mismatches
+          // Enable all options first, then only disable non-matching ones
           Array.from(unitSelect.options).forEach(opt => {
-            opt.disabled = opt.value !== '' && opt.value !== found.defaultUnit;
+            opt.disabled = false;
           });
+          if (found.defaultUnit) {
+            Array.from(unitSelect.options).forEach(opt => {
+              if (opt.value && opt.value !== found.defaultUnit) {
+                opt.disabled = true;
+              }
+            });
+          }
+        } else {
+          // If no item is selected or item cleared, enable all options
+          Array.from(unitSelect.options).forEach(opt => {
+            opt.disabled = false;
+          });
+          unitSelect.value = '';
         }
       });
       showMessage(''); // Clear loading message
@@ -310,5 +323,16 @@ window.addEventListener('DOMContentLoaded', () => {
     unitSelect.value = '';
     Array.from(unitSelect.options).forEach(opt => opt.disabled = false);
     reasonOther.style.display = 'none';
+  });
+
+  // Add item input clear handler
+  itemInput.addEventListener('input', () => {
+    if (!itemInput.value) {
+      // When item input is cleared, enable all unit options
+      Array.from(unitSelect.options).forEach(opt => {
+        opt.disabled = false;
+      });
+      unitSelect.value = '';
+    }
   });
 });
