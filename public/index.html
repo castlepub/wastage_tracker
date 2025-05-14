@@ -5,49 +5,199 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Castle Pub – Wastage Tracker</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #fafafa; display: flex; justify-content: center; padding: 2rem; }
-    .container { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width:100%; max-width:400px; position: relative; }
-    h1 { text-align: center; margin-bottom: 1rem; }
-    form label { display: block; margin: 0.5rem 0 0.25rem; }
-    form input, form select, form button { width: 100%; padding: 0.5rem; font-size: 1rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    form input:focus, form select:focus { outline: none; border-color: #0077cc; box-shadow: 0 0 0 2px rgba(0,119,204,0.2); }
-    form button { background: #0077cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; }
-    form button:hover { background: #005fa3; }
-    form button:disabled { background: #ccc; cursor: not-allowed; }
-    #message { text-align: center; margin-top: 1rem; font-weight: bold; min-height: 24px; }
-    img.logo { display: block; margin: 0 auto 1rem; max-width: 150px; }
-    
-    /* Autocomplete styles */
-    .autocomplete { position: relative; }
-    .datalist { list-style: none; padding: 0; margin: 0; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; max-height: 150px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .datalist li { padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; }
-    .datalist li.highlight { background: #0077cc; color: #fff; }
-    .datalist li:hover { background: #f0f0f0; }
-
-    /* Reset button styles */
-    .reset-button { 
-      background: #f44336 !important; 
-      margin-top: 1rem !important;
-    }
-    .reset-button:hover { 
-      background: #d32f2f !important; 
+    :root {
+      --primary-color: #1a73e8;
+      --error-color: #d93025;
+      --success-color: #188038;
+      --border-color: #dadce0;
+      --hover-color: #f8f9fa;
+      --shadow-color: rgba(0, 0, 0, 0.1);
     }
 
-    /* Validation styles */
-    input:invalid, select:invalid {
-      border-color: #f44336;
-      background-color: rgba(244,67,54,0.05);
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+      margin: 0;
+      min-height: 100vh;
+      color: #202124;
     }
-    
-    /* Loading state */
-    button[type="submit"]:disabled {
+
+    .container { 
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px var(--shadow-color);
+      width: 100%;
+      max-width: 450px;
       position: relative;
     }
-    
-    /* Responsive improvements */
+
+    h1 { 
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #202124;
+      font-size: 1.75rem;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #5f6368;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+    .form-control:hover:not(:focus) {
+      border-color: #70757a;
+    }
+
+    .form-control::placeholder {
+      color: #80868b;
+    }
+
+    /* Only show validation styles after user interaction */
+    .form-control.touched:invalid {
+      border-color: var(--error-color);
+      background-color: #fff;
+    }
+
+    .form-control.touched:invalid:focus {
+      box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
+    }
+
+    .autocomplete {
+      position: relative;
+    }
+
+    .datalist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 4px 6px var(--shadow-color);
+    }
+
+    .datalist li {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .datalist li.highlight,
+    .datalist li:hover {
+      background: var(--hover-color);
+      color: var(--primary-color);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 0.875rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #fff;
+      background: var(--primary-color);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      margin-top: 1rem;
+    }
+
+    button[type="submit"]:hover {
+      background: #1557b0;
+    }
+
+    button[type="submit"]:active {
+      transform: scale(0.98);
+    }
+
+    button[type="submit"]:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .reset-button {
+      background: transparent !important;
+      color: var(--error-color) !important;
+      border: 1px solid currentColor !important;
+      margin-top: 1rem !important;
+    }
+
+    .reset-button:hover {
+      background: rgba(217, 48, 37, 0.04) !important;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 500;
+      min-height: 24px;
+    }
+
+    #message.success {
+      background: #e6f4ea;
+      color: var(--success-color);
+    }
+
+    #message.error {
+      background: #fce8e6;
+      color: var(--error-color);
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 1.5rem;
+      max-width: 150px;
+      height: auto;
+    }
+
     @media (max-width: 480px) {
-      body { padding: 1rem; }
-      .container { padding: 1rem; }
+      body { 
+        padding: 1rem;
+      }
+      .container {
+        padding: 1.5rem;
+        border-radius: 8px;
+      }
     }
   </style>
 </head>
@@ -56,44 +206,54 @@
     <img src="logo.png" alt="The Castle Pub Logo" class="logo" />
     <h1>Wastage Tracker</h1>
     <form id="wastage-form">
-
-      <label for="employee">Employee:</label>
-      <div class="autocomplete">
-        <input type="text" id="employee" placeholder="Type to search…" autocomplete="off" required />
-        <ul id="employee-list" class="datalist"></ul>
+      <div class="form-group">
+        <label for="employee">Employee</label>
+        <div class="autocomplete">
+          <input type="text" id="employee" class="form-control" placeholder="Start typing employee name..." autocomplete="off" />
+          <ul id="employee-list" class="datalist"></ul>
+        </div>
       </div>
 
-      <label for="item">Item:</label>
-      <div class="autocomplete">
-        <input type="text" id="item" placeholder="Type to search…" autocomplete="off" required />
-        <ul id="item-list" class="datalist"></ul>
+      <div class="form-group">
+        <label for="item">Item</label>
+        <div class="autocomplete">
+          <input type="text" id="item" class="form-control" placeholder="Start typing item name..." autocomplete="off" />
+          <ul id="item-list" class="datalist"></ul>
+        </div>
       </div>
 
-      <label for="quantity">Quantity:</label>
-      <input type="number" step="any" id="quantity" placeholder="e.g. 100" required min="0.01" />
+      <div class="form-group">
+        <label for="quantity">Quantity</label>
+        <input type="number" step="any" id="quantity" class="form-control" placeholder="Enter quantity" min="0.01" />
+      </div>
 
-      <label for="unit">Unit:</label>
-      <select id="unit" required>
-        <option value="">Select unit…</option>
-        <option value="g">g (grams)</option>
-        <option value="kg">kg</option>
-        <option value="ml">ml</option>
-        <option value="l">L</option>
-        <option value="pcs">pcs</option>
-      </select>
+      <div class="form-group">
+        <label for="unit">Unit</label>
+        <select id="unit" class="form-control">
+          <option value="">Select unit...</option>
+          <option value="g">g (grams)</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">L</option>
+          <option value="pcs">pcs</option>
+        </select>
+      </div>
 
-      <label for="reason-select">Reason:</label>
-      <select id="reason-select" required>
-        <option value="">Select reason…</option>
-        <option value="broken">Broken</option>
-        <option value="spillage">Spillage</option>
-        <option value="expired">Expired</option>
-        <option value="prep error">Prep Error</option>
-        <option value="other">Other…</option>
-      </select>
-      <input type="text" id="reason-other" placeholder="Describe…" style="display:none;" />
+      <div class="form-group">
+        <label for="reason-select">Reason</label>
+        <select id="reason-select" class="form-control">
+          <option value="">Select reason...</option>
+          <option value="broken">Broken</option>
+          <option value="spillage">Spillage</option>
+          <option value="expired">Expired</option>
+          <option value="prep error">Prep Error</option>
+          <option value="other">Other...</option>
+        </select>
+        <input type="text" id="reason-other" class="form-control" placeholder="Describe reason..." style="display:none; margin-top: 0.5rem;" />
+      </div>
 
       <button type="submit">Log Wastage</button>
+      <button type="button" class="reset-button">Clear Form</button>
     </form>
     <div id="message"></div>
   </div>
