@@ -6,8 +6,8 @@ const dayjs = require('dayjs');
 
 const API_URL = 'https://wastagetracker-production.up.railway.app/api/entries';
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-// Remove /Apps prefix - Dropbox will automatically put files in the app folder
-const DROPBOX_FOLDER = '/reports'; // Just use a subfolder in the app's root
+// Try uploading directly to root
+const DROPBOX_FOLDER = '/';
 
 (async () => {
   try {
@@ -39,6 +39,7 @@ const DROPBOX_FOLDER = '/reports'; // Just use a subfolder in the app's root
 
     const csvContent = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
     const filename = `wastage-${dayjs().format('YYYY-MM-DD')}.csv`;
+    const filePath = `${DROPBOX_FOLDER}${filename}`;
     
     // 3. Initialize Dropbox
     console.log('Connecting to Dropbox...');
@@ -47,57 +48,20 @@ const DROPBOX_FOLDER = '/reports'; // Just use a subfolder in the app's root
       fetch: fetch
     });
 
-    // 4. Try to create reports folder (ignore if exists)
-    if (DROPBOX_FOLDER !== '/') {
-      try {
-        console.log('Creating folder if needed:', DROPBOX_FOLDER);
-        await dbx.filesCreateFolderV2({
-          path: DROPBOX_FOLDER,
-          autorename: false
-        });
-        console.log('Folder created or already exists');
-      } catch (err) {
-        // Ignore path_conflict error (means folder exists)
-        if (!err.message.includes('path/conflict')) {
-          console.log('Warning: Could not create folder:', err.message);
-          // Continue anyway - we'll try to upload to root
-        }
-      }
-    }
-
-    // 5. Upload file
-    const filePath = DROPBOX_FOLDER === '/' ? `/${filename}` : `${DROPBOX_FOLDER}/${filename}`;
+    // 4. Upload file
     console.log('Uploading to:', filePath);
-    
-    try {
-      const fileBuffer = Buffer.from(csvContent, 'utf8');
-      const uploadResponse = await dbx.filesUpload({
-        path: filePath,
-        contents: fileBuffer,
-        mode: { '.tag': 'overwrite' },
-        autorename: true // Enable auto-rename in case of conflicts
-      });
+    const fileBuffer = Buffer.from(csvContent, 'utf8');
 
-      console.log('✅ Upload successful!');
-      console.log('File path:', uploadResponse.result.path_display);
-      console.log('Size:', Math.round(uploadResponse.result.size / 1024), 'KB');
-    } catch (uploadErr) {
-      // If folder upload failed, try uploading to root
-      if (DROPBOX_FOLDER !== '/') {
-        console.log('Retrying upload to root folder...');
-        const rootUploadResponse = await dbx.filesUpload({
-          path: `/${filename}`,
-          contents: fileBuffer,
-          mode: { '.tag': 'overwrite' },
-          autorename: true
-        });
-        console.log('✅ Upload to root successful!');
-        console.log('File path:', rootUploadResponse.result.path_display);
-        console.log('Size:', Math.round(rootUploadResponse.result.size / 1024), 'KB');
-      } else {
-        throw uploadErr;
-      }
-    }
+    const uploadResponse = await dbx.filesUpload({
+      path: filePath,
+      contents: fileBuffer,
+      mode: { '.tag': 'overwrite' },
+      autorename: true // Enable auto-rename in case of conflicts
+    });
+
+    console.log('✅ Upload successful!');
+    console.log('File path:', uploadResponse.result.path_display);
+    console.log('Size:', Math.round(uploadResponse.result.size / 1024), 'KB');
 
   } catch (err) {
     console.error('❌ Failed to send report:', err.message);
