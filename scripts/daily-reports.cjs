@@ -6,7 +6,7 @@ const dayjs = require('dayjs');
 
 const API_URL = 'https://wastagetracker-production.up.railway.app/api/entries';
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-const DROPBOX_FOLDER = ''; // App folder root ("/Apps/castle-wastage-tracker")
+const DROPBOX_FOLDER = '/wastage-report'; // App folder root ("/Apps/castle-wastage-tracker")
 
 (async () => {
   try {
