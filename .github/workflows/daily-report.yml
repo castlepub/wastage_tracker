@@ -24,4 +24,4 @@ jobs:
     - name: Run daily-report.js
       env:
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
-      run: node scripts/daily-report.js
+      run: node scripts/daily-reports.js
