@@ -6,7 +6,8 @@ const dayjs = require('dayjs');
 
 const API_URL = 'https://wastagetracker-production.up.railway.app/api/entries';
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-const DROPBOX_FOLDER = '/Apps/castle-wastage-tracker'; // Correct app folder path
+// Remove /Apps prefix - Dropbox will automatically put files in the app folder
+const DROPBOX_FOLDER = '/reports'; // Just use a subfolder in the app's root
 
 (async () => {
   try {
@@ -38,50 +39,75 @@ const DROPBOX_FOLDER = '/Apps/castle-wastage-tracker'; // Correct app folder pat
 
     const csvContent = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
     const filename = `wastage-${dayjs().format('YYYY-MM-DD')}.csv`;
-    const fullPath = `${DROPBOX_FOLDER}/${filename}`;
-
-    // 3. Initialize Dropbox with retries
+    
+    // 3. Initialize Dropbox
     console.log('Connecting to Dropbox...');
     const dbx = new Dropbox({ 
       accessToken: DROPBOX_TOKEN,
       fetch: fetch
     });
 
-    // 4. Create folder if it doesn't exist
-    try {
-      console.log('Creating folder if needed:', DROPBOX_FOLDER);
-      await dbx.filesCreateFolderV2({
-        path: DROPBOX_FOLDER,
-        autorename: false
-      });
-    } catch (err) {
-      // Ignore error if folder already exists
-      if (!err.message.includes('path/conflict')) {
-        console.error('Warning: Failed to create folder:', err.message);
+    // 4. Try to create reports folder (ignore if exists)
+    if (DROPBOX_FOLDER !== '/') {
+      try {
+        console.log('Creating folder if needed:', DROPBOX_FOLDER);
+        await dbx.filesCreateFolderV2({
+          path: DROPBOX_FOLDER,
+          autorename: false
+        });
+        console.log('Folder created or already exists');
+      } catch (err) {
+        // Ignore path_conflict error (means folder exists)
+        if (!err.message.includes('path/conflict')) {
+          console.log('Warning: Could not create folder:', err.message);
+          // Continue anyway - we'll try to upload to root
+        }
       }
     }
 
     // 5. Upload file
-    console.log('Uploading to:', fullPath);
-    const fileBuffer = Buffer.from(csvContent, 'utf8');
+    const filePath = DROPBOX_FOLDER === '/' ? `/${filename}` : `${DROPBOX_FOLDER}/${filename}`;
+    console.log('Uploading to:', filePath);
+    
+    try {
+      const fileBuffer = Buffer.from(csvContent, 'utf8');
+      const uploadResponse = await dbx.filesUpload({
+        path: filePath,
+        contents: fileBuffer,
+        mode: { '.tag': 'overwrite' },
+        autorename: true // Enable auto-rename in case of conflicts
+      });
 
-    const uploadResponse = await dbx.filesUpload({
-      path: fullPath,
-      contents: fileBuffer,
-      mode: { '.tag': 'overwrite' },
-      autorename: false,
-      mute: false
-    });
-
-    console.log('✅ Upload successful!');
-    console.log('File ID:', uploadResponse.result.id);
-    console.log('File path:', uploadResponse.result.path_display);
-    console.log('Size:', Math.round(uploadResponse.result.size / 1024), 'KB');
+      console.log('✅ Upload successful!');
+      console.log('File path:', uploadResponse.result.path_display);
+      console.log('Size:', Math.round(uploadResponse.result.size / 1024), 'KB');
+    } catch (uploadErr) {
+      // If folder upload failed, try uploading to root
+      if (DROPBOX_FOLDER !== '/') {
+        console.log('Retrying upload to root folder...');
+        const rootUploadResponse = await dbx.filesUpload({
+          path: `/${filename}`,
+          contents: fileBuffer,
+          mode: { '.tag': 'overwrite' },
+          autorename: true
+        });
+        console.log('✅ Upload to root successful!');
+        console.log('File path:', rootUploadResponse.result.path_display);
+        console.log('Size:', Math.round(rootUploadResponse.result.size / 1024), 'KB');
+      } else {
+        throw uploadErr;
+      }
+    }
 
   } catch (err) {
     console.error('❌ Failed to send report:', err.message);
     if (err.response) {
-      console.error('Error details:', await err.response.text());
+      try {
+        const errorDetails = await err.response.text();
+        console.error('Error details:', errorDetails);
+      } catch (e) {
+        console.error('Could not read error details');
+      }
     }
     // Make the script fail explicitly so GitHub Actions marks it as failed
     process.exit(1);
