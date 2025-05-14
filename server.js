@@ -1,14 +1,9 @@
 // server.js
-import express from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { Pool } from 'pg';
-
-// Resolve __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 app.use(cors());
@@ -29,14 +24,16 @@ const db = new Pool({
 });
 
 // Test database connection
-try {
-  const client = await db.connect();
-  console.log('✅ Database connection successful');
-  client.release();
-} catch (err) {
-  console.error('Failed to connect to database:', err);
-  process.exit(1);
-}
+(async () => {
+  try {
+    const client = await db.connect();
+    console.log('✅ Database connection successful');
+    client.release();
+  } catch (err) {
+    console.error('Failed to connect to database:', err);
+    process.exit(1);
+  }
+})();
 
 // Ensure tables exist on startup
 (async () => {
