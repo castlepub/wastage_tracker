@@ -1,7 +1,7 @@
 {
   "name": "castle-wastage-tracker",
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "seed:costs": "node scripts/seedCosts.js",
     "start":     "npm run seed:costs && node server.js"
