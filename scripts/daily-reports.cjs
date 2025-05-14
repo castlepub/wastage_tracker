@@ -4,13 +4,17 @@ const fs = require('fs');
 const { Dropbox } = require('dropbox');
 const dayjs = require('dayjs');
 
-const API_URL = 'https://wastagetracker-production.up.railway.app/api/entries';
+// Get the date range for the last 24 hours
+const endDate = dayjs().toISOString();
+const startDate = dayjs().subtract(24, 'hours').toISOString();
+
+const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate}&end=${endDate}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
   try {
     // 1. Fetch entries
-    console.log('Fetching entries from API...');
+    console.log('Fetching entries from API for the last 24 hours...');
     const res = await fetch(API_URL);
     if (!res.ok) {
       throw new Error(`API request failed with status ${res.status}: ${await res.text()}`);
@@ -21,7 +25,7 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     if (!Array.isArray(entries)) {
       throw new Error('API did not return a list');
     }
-    console.log(`Found ${entries.length} entries`);
+    console.log(`Found ${entries.length} entries in the last 24 hours`);
 
     // 2. Format CSV
     const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time', 'Cost (€)'];
