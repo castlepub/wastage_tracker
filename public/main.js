@@ -165,29 +165,6 @@ window.addEventListener('DOMContentLoaded', () => {
         itemInput.value = val;
         itemList.style.display = 'none';
         itemInput.classList.add('touched');
-        
-        const found = data.find(i => i.name === val);
-        if (found) {
-          unitSelect.value = found.defaultUnit;
-          unitSelect.classList.add('touched');
-          // Enable all options first, then only disable non-matching ones
-          Array.from(unitSelect.options).forEach(opt => {
-            opt.disabled = false;
-          });
-          if (found.defaultUnit) {
-            Array.from(unitSelect.options).forEach(opt => {
-              if (opt.value && opt.value !== found.defaultUnit) {
-                opt.disabled = true;
-              }
-            });
-          }
-        } else {
-          // If no item is selected or item cleared, enable all options
-          Array.from(unitSelect.options).forEach(opt => {
-            opt.disabled = false;
-          });
-          unitSelect.value = '';
-        }
       });
       showMessage(''); // Clear loading message
     })
@@ -250,18 +227,18 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Validate unit matches item
-    if (unitSelect.value !== selectedItem.defaultUnit) {
-      showMessage(`Please use ${selectedItem.defaultUnit} for ${selectedItem.name}`, 'error');
-      unitSelect.focus();
-      return;
-    }
-
     // Validate quantity
     const quantity = parseFloat(quantityInput.value);
     if (isNaN(quantity) || quantity <= 0) {
       showMessage('Please enter a valid quantity', 'error');
       quantityInput.focus();
+      return;
+    }
+
+    // Validate unit is selected
+    if (!unitSelect.value) {
+      showMessage('Please select a unit', 'error');
+      unitSelect.focus();
       return;
     }
 
@@ -299,7 +276,6 @@ window.addEventListener('DOMContentLoaded', () => {
         form.reset();
         formControls.forEach(control => control.classList.remove('touched'));
         unitSelect.value = '';
-        Array.from(unitSelect.options).forEach(opt => opt.disabled = false);
         reasonOther.style.display = 'none';
       } else {
         showMessage(`❌ ${result.error || 'Failed to log wastage'}`, 'error');
@@ -321,7 +297,6 @@ window.addEventListener('DOMContentLoaded', () => {
     msg.textContent = '';
     msg.className = '';
     unitSelect.value = '';
-    Array.from(unitSelect.options).forEach(opt => opt.disabled = false);
     reasonOther.style.display = 'none';
   });
 
