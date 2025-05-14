@@ -1,7 +1,7 @@
 {
   "name": "castle-wastage-tracker",
   "version": "1.0.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "seed:costs": "node scripts/seedCosts.js",
     "start":     "npm run seed:costs && node server.js"
@@ -11,6 +11,9 @@
     "body-parser":"^1.20.2",
     "cors":       "^2.8.5",
     "pg":         "^8.10.0",
-    "csv-parser": "^3.0.0"
+    "csv-parser": "^3.0.0",
+    "dropbox":    "^11.0.0",
+    "node-fetch": "^2.6.7",
+    "dayjs":      "^1.11.10"
   }
 }
