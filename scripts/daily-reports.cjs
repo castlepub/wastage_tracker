@@ -3,10 +3,27 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const { Dropbox } = require('dropbox');
 const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
 
-// Get the date range for the last 24 hours
-const endDate = dayjs().toISOString();
-const startDate = dayjs().subtract(24, 'hours').toISOString();
+// Add UTC and timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// Set timezone to UTC
+dayjs.tz.setDefault('UTC');
+
+// Get the date range from 6 AM today to 6 AM tomorrow
+const now = dayjs().utc();
+const today6AM = now.startOf('day').add(6, 'hour');
+const tomorrow6AM = today6AM.add(24, 'hour');
+
+// If current time is before 6 AM, we need to use yesterday 6 AM to today 6 AM
+const startDate = (now.isBefore(today6AM) ? today6AM.subtract(24, 'hour') : today6AM).toISOString();
+const endDate = (now.isBefore(today6AM) ? today6AM : tomorrow6AM).toISOString();
+
+// Use the date of the end of the period (when the report is generated) for the filename
+const reportDate = dayjs(endDate).subtract(1, 'minute').format('YYYY-MM-DD');
 
 const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate}&end=${endDate}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
@@ -14,7 +31,10 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 (async () => {
   try {
     // 1. Fetch entries
-    console.log('Fetching entries from API for the last 24 hours...');
+    console.log('Fetching entries for the period:');
+    console.log('From:', dayjs(startDate).format('YYYY-MM-DD HH:mm'), 'UTC');
+    console.log('To:  ', dayjs(endDate).format('YYYY-MM-DD HH:mm'), 'UTC');
+    
     const res = await fetch(API_URL);
     if (!res.ok) {
       throw new Error(`API request failed with status ${res.status}: ${await res.text()}`);
@@ -25,7 +45,7 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     if (!Array.isArray(entries)) {
       throw new Error('API did not return a list');
     }
-    console.log(`Found ${entries.length} entries in the last 24 hours`);
+    console.log(`Found ${entries.length} entries for this period`);
 
     // 2. Format CSV
     const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time', 'Cost (€)'];
@@ -40,7 +60,7 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     ]);
 
     const csvContent = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
-    const filename = `wastage-${dayjs().format('YYYY-MM-DD')}.csv`;
+    const filename = `wastage-${reportDate}.csv`;
     
     // 3. Initialize Dropbox with more detailed error handling
     console.log('Initializing Dropbox client...');
