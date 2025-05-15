@@ -25,7 +25,7 @@ const endDate = (now.isBefore(today6AM) ? today6AM : tomorrow6AM).toISOString();
 // Use the date of the end of the period (when the report is generated) for the filename
 const reportDate = dayjs(endDate).subtract(1, 'minute').format('YYYY-MM-DD');
 
-const API_URL = `https://wastage-tracker-production.up.railway.app/api/entries?start=${startDate}&end=${endDate}`;
+const API_URL = `https://castle-wastage-tracker-production.up.railway.app/api/entries?start=${startDate}&end=${endDate}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
