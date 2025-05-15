@@ -41,14 +41,21 @@ const reportDate = startDate.format('YYYY-MM-DD');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to fetch with retries
-async function fetchWithRetries(url, options = {}, maxRetries = 8, initialDelay = 15000) {
+async function fetchWithRetries(url, options = {}, maxRetries = 12, initialDelay = 20000) {
   let lastError;
   let delay = initialDelay;
+  let totalWaitTime = 0;
+  const maxTotalWaitTime = 300000; // 5 minutes total maximum wait time
 
   for (let i = 0; i < maxRetries; i++) {
     try {
+      if (totalWaitTime >= maxTotalWaitTime) {
+        throw new Error(`Exceeded maximum total wait time of ${maxTotalWaitTime/1000} seconds`);
+      }
+
       console.log(`\nAttempt ${i + 1}/${maxRetries} to fetch data...`);
       console.log('Request URL:', url);
+      console.log(`Total wait time so far: ${Math.round(totalWaitTime/1000)} seconds`);
       
       const res = await fetch(url, {
         ...options,
@@ -56,9 +63,11 @@ async function fetchWithRetries(url, options = {}, maxRetries = 8, initialDelay 
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'User-Agent': 'WastageTracker-DailyReport/1.0',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
           ...(options.headers || {})
         },
-        timeout: 60000 // 60 second timeout for cold starts
+        timeout: 90000 // 90 second timeout for cold starts
       });
       
       console.log('Response status:', res.status);
@@ -86,9 +95,14 @@ async function fetchWithRetries(url, options = {}, maxRetries = 8, initialDelay 
       
       // If it's a 502, 404, or 503, wait and retry (common during cold starts)
       if ([502, 404, 503].includes(res.status)) {
-        const waitTime = Math.min(delay * (1 + (i * 0.5)), 120000); // Cap at 2 minutes
+        // Progressive backoff with some randomization
+        const baseWaitTime = delay * (1 + (i * 0.5));
+        const jitter = Math.random() * 5000; // Add up to 5 seconds of random jitter
+        const waitTime = Math.min(baseWaitTime + jitter, 120000); // Cap at 2 minutes per attempt
+        
         console.log(`Got ${res.status} error (cold start), waiting ${Math.round(waitTime/1000)} seconds...`);
         await sleep(waitTime);
+        totalWaitTime += waitTime;
         continue;
       }
       
@@ -98,11 +112,15 @@ async function fetchWithRetries(url, options = {}, maxRetries = 8, initialDelay 
       console.log(`Request failed: ${err.message}`);
       
       // For network errors, also retry with increasing delays
-      if (err.name === 'FetchError' || err.name === 'AbortError') {
-        if (i < maxRetries - 1) {
-          const waitTime = Math.min(delay * (1 + (i * 0.5)), 120000);
+      if (err.name === 'FetchError' || err.name === 'AbortError' || err.message.includes('timeout')) {
+        if (i < maxRetries - 1 && totalWaitTime < maxTotalWaitTime) {
+          const baseWaitTime = delay * (1 + (i * 0.5));
+          const jitter = Math.random() * 5000;
+          const waitTime = Math.min(baseWaitTime + jitter, 120000);
+          
           console.log(`Network error, waiting ${Math.round(waitTime/1000)} seconds...`);
           await sleep(waitTime);
+          totalWaitTime += waitTime;
           continue;
         }
       }
@@ -133,23 +151,42 @@ if (!DROPBOX_TOKEN) {
     console.log('\n=== Configuration ===');
     console.log('Using API URL:', BASE_URL);
     
-    // Pre-warm the application
+    // Pre-warm the application with multiple attempts
     console.log('\n=== Pre-warming Application ===');
-    console.log('Sending initial request to wake up the application...');
-    try {
-      await fetch(BASE_URL, { 
-        method: 'GET',
-        timeout: 5000 
-      }).catch(() => {}); // Ignore errors from this request
+    console.log('Sending initial requests to wake up the application...');
+    
+    // Try to pre-warm multiple times
+    for (let i = 0; i < 3; i++) {
+      try {
+        console.log(`Pre-warm attempt ${i + 1}/3...`);
+        const res = await fetch(BASE_URL, { 
+          method: 'GET',
+          timeout: 10000,
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        if (res.ok) {
+          console.log('Pre-warm request succeeded!');
+          break;
+        }
+      } catch (err) {
+        console.log(`Pre-warm attempt ${i + 1} failed (this is okay)`);
+      }
       
-      // Give the application a moment to wake up
-      console.log('Waiting 10 seconds for application to warm up...');
-      await sleep(10000);
-    } catch (err) {
-      // Ignore pre-warm errors
-      console.log('Pre-warm request failed (this is okay)');
+      // Wait between attempts
+      if (i < 2) {
+        console.log('Waiting 20 seconds before next pre-warm attempt...');
+        await sleep(20000);
+      }
     }
     
+    // Give the application a moment to fully initialize
+    console.log('Waiting 30 seconds for application to warm up...');
+    await sleep(30000);
+
     // 1. Then do the health check
     console.log('\n=== Health Check ===');
     console.log('Testing application health...');
