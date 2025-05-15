@@ -41,6 +41,10 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     console.log('Current time:', now.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('\n=== API Request ===');
+    console.log('API URL:', API_URL);
+    console.log('Start date (ISO):', startDate.toISOString());
+    console.log('End date (ISO):', endDate.toISOString());
     console.log('===========================\n');
     
     const res = await fetch(API_URL);
