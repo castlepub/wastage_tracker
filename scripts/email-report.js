@@ -87,26 +87,43 @@ async function generateReport() {
     console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
     console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
 
+    // Debug environment
+    console.log('Environment variables:');
+    console.log('- APP_URL:', process.env.APP_URL || '(not set)');
+    console.log('- REPORT_EMAIL:', process.env.REPORT_EMAIL ? '(set)' : '(not set)');
+    console.log('- SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? '(set)' : '(not set)');
+
     // Construct base URL
     let baseUrl = process.env.APP_URL;
     if (!baseUrl || baseUrl.trim() === '') {
-      console.log('No APP_URL provided, using default:', DEFAULT_URL);
+      console.log('\nNo APP_URL provided, using default:', DEFAULT_URL);
       baseUrl = DEFAULT_URL;
     }
     
     // Ensure baseUrl has no trailing slash
     baseUrl = baseUrl.replace(/\/+$/, '');
-    console.log('Using base URL:', baseUrl);
+    console.log('Base URL after cleanup:', baseUrl);
 
-    // Construct API URL
-    const apiUrl = new URL('/api/entries', baseUrl);
-    apiUrl.searchParams.append('start', startDate.toISOString());
-    apiUrl.searchParams.append('end', endDate.toISOString());
-    
-    console.log('Full API URL:', apiUrl.toString());
+    // Construct API URL manually
+    const apiUrl = `${baseUrl}/api/entries?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
+    console.log('Constructed API URL:', apiUrl);
+
+    // Validate URL
+    try {
+      const urlObject = new URL(apiUrl);
+      console.log('\nURL validation passed:');
+      console.log('- Protocol:', urlObject.protocol);
+      console.log('- Host:', urlObject.host);
+      console.log('- Pathname:', urlObject.pathname);
+      console.log('- Search:', urlObject.search);
+    } catch (err) {
+      console.error('URL validation failed:', err.message);
+      throw new Error(`Invalid URL constructed: ${apiUrl}`);
+    }
 
     // Fetch data
-    const data = await fetchWithRetries(apiUrl.toString());
+    console.log('\nAttempting to fetch data from:', apiUrl);
+    const data = await fetchWithRetries(apiUrl);
     const entries = data.entries || [];
 
     // Filter and validate entries
