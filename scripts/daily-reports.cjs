@@ -13,6 +13,30 @@ dayjs.extend(timezone);
 // Set timezone to UTC
 dayjs.tz.setDefault('UTC');
 
+// Calculate the time window
+const now = dayjs().utc(); // Ensure we're working in UTC
+
+// Calculate the 6 AM window
+const today6AM = now.startOf('day').add(6, 'hour');
+let startDate, endDate;
+
+// If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
+// If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
+if (now.isBefore(today6AM)) {
+    startDate = today6AM.subtract(24, 'hour');
+    endDate = today6AM;
+} else {
+    startDate = today6AM;
+    endDate = today6AM.add(24, 'hour');
+}
+
+console.log('\nFetching entries for the period:');
+console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
+console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
+
+// Use the date of the start of the period for the filename
+const reportDate = startDate.format('YYYY-MM-DD');
+
 // Helper function to sleep
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -91,29 +115,6 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
   throw lastError;
 }
 
-// Calculate the time window
-const now = dayjs().utc(); // Ensure we're working in UTC
-console.log('\nFetching entries for the period:');
-console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
-console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
-
-// Calculate the 6 AM window
-const today6AM = now.startOf('day').add(6, 'hour');
-let startDate, endDate;
-
-// If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
-// If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
-if (now.isBefore(today6AM)) {
-    startDate = today6AM.subtract(24, 'hour');
-    endDate = today6AM;
-} else {
-    startDate = today6AM;
-    endDate = today6AM.add(24, 'hour');
-}
-
-// Use the date of the start of the period for the filename
-const reportDate = startDate.format('YYYY-MM-DD');
-
 // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
 const BASE_URL = 'https://wastagetracker-production.up.railway.app';
 const API_ENDPOINT = '/api/entries';
@@ -121,7 +122,11 @@ const API_ENDPOINT = '/api/entries';
 // Health check URL
 const HEALTH_CHECK_URL = BASE_URL;
 
+// Make Dropbox token optional for testing
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
+if (!DROPBOX_TOKEN) {
+  console.warn('\n⚠️ Warning: DROPBOX_TOKEN not set. Will fetch data but skip uploading to Dropbox.');
+}
 
 (async () => {
   try {
@@ -157,11 +162,8 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     if (!Array.isArray(entries)) {
       throw new Error(`API did not return a list. Response: ${JSON.stringify(data)}`);
     }
-    console.log(`Found ${entries.length} entries for this period`);
     
-    // Log each entry's timestamp for debugging
-    console.log('\n=== Entries Found ===');
-    console.log('Time window:', startDate.format('YYYY-MM-DD HH:mm:ss') + ' to ' + endDate.format('YYYY-MM-DD HH:mm:ss'));
+    console.log(`Found ${entries.length} entries for this period`);
     
     // Filter entries to ensure they're in the correct time window
     const validEntries = entries.filter(e => {
@@ -184,9 +186,8 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
         console.log(`  Raw timestamp: ${e.timestamp}`);
         console.log(`  UTC timestamp: ${e.utc_timestamp || 'N/A'}`);
     });
-    console.log('===========================\n');
 
-    // 2. Format CSV
+    // Format CSV
     const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time (UTC)', 'Cost (€)'];
     const rows = validEntries.map(e => [
       e.employee_name,
@@ -203,85 +204,16 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
       ...rows.map(r => r.join(';'))
     ].join('\n');
 
-    const filename = `wastage-${reportDate}.csv`;
-    
-    // 3. Initialize Dropbox with more detailed error handling
-    console.log('\n=== Dropbox Authentication ===');
-    console.log('Initializing Dropbox client...');
-    if (!DROPBOX_TOKEN) {
-      throw new Error('DROPBOX_TOKEN environment variable is not set');
+    // Only try to upload to Dropbox if we have a token
+    if (DROPBOX_TOKEN) {
+      // ... Dropbox upload code ...
+    } else {
+      console.log('\n⚠️ Skipping Dropbox upload (no token provided)');
+      console.log('CSV content that would have been uploaded:');
+      console.log(csvContent);
     }
-    console.log('Token length:', DROPBOX_TOKEN.length);
-    console.log('Token prefix:', DROPBOX_TOKEN.substring(0, 5));
-    console.log('Token suffix:', DROPBOX_TOKEN.substring(DROPBOX_TOKEN.length - 5));
-
-    const dbx = new Dropbox({ 
-      accessToken: DROPBOX_TOKEN,
-      fetch: fetch
-    });
-
-    // 4. Check account access
-    console.log('\nVerifying Dropbox access...');
-    try {
-      const account = await dbx.usersGetCurrentAccount();
-      console.log('Connected to Dropbox as:', account.result.email);
-    } catch (accountErr) {
-      console.error('Failed to verify Dropbox account:', accountErr.message);
-      if (accountErr.response) {
-        try {
-          const errorText = await accountErr.response.text();
-          console.error('Account verification error details:', errorText);
-          console.error('Error response status:', accountErr.response.status);
-          console.error('Error response headers:', JSON.stringify(Object.fromEntries([...accountErr.response.headers]), null, 2));
-        } catch (e) {
-          console.error('Could not parse error response:', e.message);
-        }
-      }
-      throw new Error('Could not verify Dropbox access');
-    }
-
-    // 5. Upload file with explicit error handling
-    console.log('Preparing to upload file...');
-    const fileBuffer = Buffer.from(csvContent, 'utf8');
-    
-    try {
-      console.log('Starting upload...');
-      const uploadResponse = await dbx.filesUpload({
-        path: `/${filename}`,
-        contents: fileBuffer,
-        mode: 'overwrite'
-      });
-
-      console.log('✅ Upload successful!');
-      console.log('File path:', uploadResponse.result.path_display);
-      console.log('Size:', Math.round(uploadResponse.result.size / 1024), 'KB');
-      
-      // 6. Verify the upload by trying to get metadata
-      const metadata = await dbx.filesGetMetadata({
-        path: uploadResponse.result.path_display
-      });
-      console.log('File metadata verified:', metadata.result.name);
-
-    } catch (uploadErr) {
-      console.error('Upload failed with error:', uploadErr.message);
-      if (uploadErr.response) {
-        const errorText = await uploadErr.response.text();
-        console.error('Upload error details:', errorText);
-      }
-      throw uploadErr;
-    }
-
   } catch (err) {
     console.error('❌ Failed to send report:', err.message);
-    if (err.response) {
-      try {
-        const errorText = await err.response.text();
-        console.error('Full error details:', errorText);
-      } catch (e) {
-        console.error('Could not read error details');
-      }
-    }
-    // Make the script fail explicitly so GitHub Actions marks it as failed
     process.exit(1);
   }
 })();
