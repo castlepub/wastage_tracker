@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
+const seedCosts = require('./scripts/seedCosts');
 
 const app = express();
 app.use(cors());
@@ -23,21 +24,15 @@ const db = new Pool({
   connectionTimeoutMillis: 5000
 });
 
-// Test database connection
-(async () => {
+// Initialize database and start server
+async function initialize() {
   try {
+    // 1. Test database connection
     const client = await db.connect();
     console.log('✅ Database connection successful');
     client.release();
-  } catch (err) {
-    console.error('Failed to connect to database:', err);
-    process.exit(1);
-  }
-})();
 
-// Ensure tables exist on startup
-(async () => {
-  try {
+    // 2. Ensure tables exist
     await db.query(`
       CREATE TABLE IF NOT EXISTS wastage_entries (
         id SERIAL PRIMARY KEY,
@@ -51,19 +46,17 @@ const db = new Pool({
     `);
     console.log('✅ wastage_entries table ready');
 
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS item_costs (
-        item_name TEXT PRIMARY KEY,
-        unit_cost REAL NOT NULL,
-        unit TEXT NOT NULL
-      );
-    `);
-    console.log('✅ item_costs table ready');
+    // 3. Seed costs data
+    await seedCosts(db);
+    
+    // 4. Start server
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => console.log(`✅ Server listening on port ${port}`));
   } catch (err) {
-    console.error('Failed to initialize tables:', err);
+    console.error('Initialization failed:', err);
     process.exit(1);
   }
-})();
+}
 
 // Input validation middleware
 const validateWastageEntry = (req, res, next) => {
@@ -161,9 +154,11 @@ app.get('/api/entries', async (req, res) => {
 // Health check
 app.get('/', (_req, res) => res.send('OK'));
 
-// Start server
-const port = process.env.PORT || 3000;
-const server = app.listen(port, () => console.log(`Listening on port ${port}`));
+// Initialize the application
+initialize().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
