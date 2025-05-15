@@ -6,80 +6,26 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
-  run-daily-report:
+  generate-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 7  # Fetch last week of history
     
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         
-    - name: Debug Environment
-      run: |
-        echo "Node version: $(node -v)"
-        echo "NPM version: $(npm -v)"
-        echo "Working directory: $(pwd)"
-        echo "Directory contents:"
-        ls -la
-        echo "Script contents:"
-        cat scripts/daily-reports.cjs
-        echo "Environment variables:"
-        env | grep -v -i key | grep -v -i token | grep -v -i secret
-        
     - name: Install dependencies
-      run: npm install
-      
-    - name: Debug Dependencies
-      run: |
-        echo "Installed packages:"
-        npm list || true
-        echo "node-fetch version:"
-        npm list node-fetch || true
+      run: npm install dayjs dropbox
         
-    - name: Wait for Railway application
-      run: |
-        MAX_RETRIES=10
-        RETRY_COUNT=0
-        WAIT_SECONDS=30
-        APP_URL="${{ vars.APP_URL || 'https://wastagetracker-production.up.railway.app' }}"
-        
-        echo "Testing connection to: $APP_URL"
-        
-        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-          HTTP_CODE=$(curl -s -o response.txt -w "%{http_code}" "$APP_URL")
-          echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES - HTTP Code: $HTTP_CODE"
-          echo "Response body:"
-          cat response.txt
-          
-          if [ $HTTP_CODE -eq 200 ]; then
-            echo "✅ Application is responding"
-            break
-          else
-            echo "⚠️ Application not ready (HTTP $HTTP_CODE)"
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            
-            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-              echo "Waiting ${WAIT_SECONDS} seconds before next attempt..."
-              sleep $WAIT_SECONDS
-            fi
-          fi
-        done
-        
-        if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-          echo "❌ Application failed to respond after $MAX_RETRIES attempts"
-          exit 1
-        fi
-        
-    - name: Run daily report script
+    - name: Generate and upload report
       env:
-        APP_URL: ${{ vars.APP_URL || 'https://wastagetracker-production.up.railway.app' }}
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
-        NODE_ENV: production
-        DEBUG: "*"
       run: |
-        echo "Starting script execution..."
-        node --trace-warnings scripts/daily-reports.cjs
+        echo "Starting report generation..."
+        node scripts/local-daily-report.cjs
