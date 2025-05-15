@@ -13,19 +13,26 @@ dayjs.extend(timezone);
 // Set timezone to UTC
 dayjs.tz.setDefault('UTC');
 
-// Calculate the time window
-const now = dayjs().utc();
+// Calculate the time window using actual current date
+const now = dayjs();
+const realNow = new Date();
 console.log('\n=== Debug Info ===');
-console.log('System time:', new Date().toISOString());
-console.log('Dayjs time:', now.toISOString());
+console.log('System time:', realNow.toISOString());
+console.log('Current year:', realNow.getFullYear());
+console.log('Dayjs time before:', now.toISOString());
+
+// Force current year
+const currentYear = realNow.getFullYear();
+const nowWithCorrectYear = now.year(currentYear);
+console.log('Dayjs time after:', nowWithCorrectYear.toISOString());
 console.log('===========================\n');
 
-const today6AM = now.startOf('day').add(6, 'hour');
+const today6AM = nowWithCorrectYear.startOf('day').add(6, 'hour');
 let startDate, endDate;
 
 // If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
 // If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
-if (now.isBefore(today6AM)) {
+if (nowWithCorrectYear.isBefore(today6AM)) {
     startDate = today6AM.subtract(24, 'hour');
     endDate = today6AM;
 } else {
