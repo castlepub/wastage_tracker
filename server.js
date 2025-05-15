@@ -5,6 +5,9 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 
+console.log('\n=== Server Initialization ===');
+console.log('Starting server initialization...');
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -12,18 +15,26 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Validate database URL
+console.log('\nChecking DATABASE_URL...');
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL environment variable is required');
   process.exit(1);
 }
+console.log('DATABASE_URL is set');
 
 // Connect to Postgres with connection timeout
+console.log('\nInitializing database connection pool...');
 const db = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 5000
+  connectionTimeoutMillis: 5000,
+  // Add some additional pool settings
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  allowExitOnIdle: true // Allow the pool to exit when all clients are idle
 });
 
 // Test database connection
+console.log('\nTesting database connection...');
 (async () => {
   try {
     const client = await db.connect();
@@ -36,6 +47,7 @@ const db = new Pool({
 })();
 
 // Ensure tables exist on startup
+console.log('\nChecking database tables...');
 (async () => {
   try {
     await db.query(`
@@ -175,7 +187,11 @@ app.get('/', (_req, res) => res.send('OK'));
 
 // Start server
 const port = process.env.PORT || 3000;
-const server = app.listen(port, () => console.log(`Listening on port ${port}`));
+console.log(`\nStarting server on port ${port}...`);
+const server = app.listen(port, () => {
+  console.log(`✅ Server is listening on port ${port}`);
+  console.log('=== Initialization Complete ===\n');
+});
 
 // Graceful shutdown handler
 function shutdownGracefully(signal) {
