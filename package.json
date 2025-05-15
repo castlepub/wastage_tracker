@@ -2,7 +2,6 @@
   "name": "castle-wastage-tracker",
   "version": "1.0.0",
   "scripts": {
-    "seed:costs": "node scripts/seedCosts.js",
     "start": "node server.js"
   },
   "dependencies": {
