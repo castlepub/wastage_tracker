@@ -4,10 +4,22 @@ const path = require('path');
 const csv = require('csv-parser');
 
 async function seedCosts(pool) {
+  // Check if we need to seed by comparing row count
+  try {
+    const { rows: [{ count }] } = await pool.query('SELECT COUNT(*) FROM item_costs');
+    if (count > 0) {
+      console.log('✅ Item costs table already populated, skipping seed');
+      return;
+    }
+  } catch (err) {
+    // Table doesn't exist, we'll create it
+  }
+
   return new Promise((resolve, reject) => {
     const rows = [];
     const csvPath = path.join(process.cwd(), 'data', 'stockLevels.csv');
 
+    console.log('Reading CSV file...');
     fs.createReadStream(csvPath)
       .pipe(csv({
         separator: ';',
@@ -16,6 +28,8 @@ async function seedCosts(pool) {
       .on('data', row => rows.push(row))
       .on('end', async () => {
         try {
+          console.log(`Processing ${rows.length} items...`);
+
           // 1) Ensure table exists
           await pool.query(`
             CREATE TABLE IF NOT EXISTS item_costs (
@@ -44,12 +58,15 @@ async function seedCosts(pool) {
             return 'pcs';
           };
 
-          // 4) Seed every row (cost defaults to 0)
+          // 4) Prepare batch insert data
+          const values = [];
+          const params = [];
+          let paramCount = 1;
+
           for (const r of rows) {
             const nameRaw = r[nameKey] || '';
             const name    = nameRaw.trim();
             if (!name) {
-              console.warn('Skipping row with no name:', r);
               continue;
             }
 
@@ -59,17 +76,25 @@ async function seedCosts(pool) {
             let unit = (r[unitCol] || '').trim().toLowerCase();
             if (!unit) unit = inferUnit(r);
 
-            await pool.query(
-              `INSERT INTO item_costs(item_name, unit_cost, unit)
-               VALUES($1,$2,$3)
-               ON CONFLICT(item_name) DO UPDATE
-                 SET unit_cost = EXCLUDED.unit_cost,
-                     unit      = EXCLUDED.unit;`,
-              [name, cost, unit]
-            );
+            values.push(`($${paramCount}, $${paramCount + 1}, $${paramCount + 2})`);
+            params.push(name, cost, unit);
+            paramCount += 3;
           }
 
-          console.log('✅ Costs seeded');
+          if (values.length > 0) {
+            // 5) Perform batch insert
+            const query = `
+              INSERT INTO item_costs(item_name, unit_cost, unit)
+              VALUES ${values.join(',')}
+              ON CONFLICT(item_name) DO UPDATE
+                SET unit_cost = EXCLUDED.unit_cost,
+                    unit = EXCLUDED.unit;
+            `;
+
+            await pool.query(query, params);
+          }
+
+          console.log(`✅ ${values.length} items seeded`);
           resolve();
         } catch (err) {
           console.error('Seeding error:', err);
