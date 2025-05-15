@@ -90,128 +90,142 @@ async function generateReport() {
     console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
 
     // Fetch entries
-    const BASE_URL = process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : 'https://wastagetracker-production.up.railway.app';
-    const API_URL = new URL(`/api/entries`, BASE_URL).toString() + `?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
+    const DEFAULT_URL = 'https://wastagetracker-production.up.railway.app';
+    const BASE_URL = process.env.APP_URL && process.env.APP_URL.trim() !== '' 
+      ? process.env.APP_URL.replace(/\/$/, '')
+      : DEFAULT_URL;
     
-    const data = await fetchWithRetries(API_URL);
-    const entries = data.entries || [];
+    console.log('Using API URL:', BASE_URL);
+    
+    try {
+      const apiUrl = new URL('/api/entries', BASE_URL);
+      apiUrl.searchParams.append('start', startDate.toISOString());
+      apiUrl.searchParams.append('end', endDate.toISOString());
+      
+      const data = await fetchWithRetries(apiUrl.toString());
+      const entries = data.entries || [];
 
-    // Filter and validate entries
-    const validEntries = entries.filter(e => {
-      const entryTime = dayjs(e.timestamp).utc();
-      return entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
-    });
+      // Filter and validate entries
+      const validEntries = entries.filter(e => {
+        const entryTime = dayjs(e.timestamp).utc();
+        return entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
+      });
 
-    // Generate CSV
-    const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time (UTC)', 'Cost (€)'];
-    const rows = validEntries.map(e => [
-      e.employee_name,
-      e.item_name,
-      e.quantity,
-      e.unit,
-      e.reason || '',
-      dayjs(e.timestamp).utc().format('DD.MM.YYYY HH:mm:ss'),
-      e.total_cost?.toFixed(2) || '0.00'
-    ]);
+      // Generate CSV
+      const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time (UTC)', 'Cost (€)'];
+      const rows = validEntries.map(e => [
+        e.employee_name,
+        e.item_name,
+        e.quantity,
+        e.unit,
+        e.reason || '',
+        dayjs(e.timestamp).utc().format('DD.MM.YYYY HH:mm:ss'),
+        e.total_cost?.toFixed(2) || '0.00'
+      ]);
 
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map(r => r.join(';'))
-    ].join('\n');
+      const csvContent = [
+        headers.join(';'),
+        ...rows.map(r => r.join(';'))
+      ].join('\n');
 
-    // Generate HTML summary
-    const totalCost = validEntries.reduce((sum, e) => sum + (e.total_cost || 0), 0);
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .header h1 { color: #1a1a1a; margin-bottom: 10px; }
-          .summary { background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
-          .summary p { margin: 10px 0; }
-          .cost { color: #d35400; font-weight: bold; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
-          td { padding: 10px; border-bottom: 1px solid #ddd; }
-          tr:nth-child(even) { background: #f9f9f9; }
-          .footer { margin-top: 30px; font-size: 0.9em; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>The Castle Berlin</h1>
-            <h2>Daily Wastage Report</h2>
-          </div>
-          
-          <div class="summary">
-            <p><strong>Period:</strong> ${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')} UTC</p>
-            <p><strong>Total Entries:</strong> ${validEntries.length}</p>
-            <p><strong>Total Cost:</strong> <span class="cost">€${totalCost.toFixed(2)}</span></p>
-          </div>
+      // Generate HTML summary
+      const totalCost = validEntries.reduce((sum, e) => sum + (e.total_cost || 0), 0);
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .header h1 { color: #1a1a1a; margin-bottom: 10px; }
+            .summary { background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
+            .summary p { margin: 10px 0; }
+            .cost { color: #d35400; font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
+            td { padding: 10px; border-bottom: 1px solid #ddd; }
+            tr:nth-child(even) { background: #f9f9f9; }
+            .footer { margin-top: 30px; font-size: 0.9em; color: #666; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>The Castle Berlin</h1>
+              <h2>Daily Wastage Report</h2>
+            </div>
+            
+            <div class="summary">
+              <p><strong>Period:</strong> ${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')} UTC</p>
+              <p><strong>Total Entries:</strong> ${validEntries.length}</p>
+              <p><strong>Total Cost:</strong> <span class="cost">€${totalCost.toFixed(2)}</span></p>
+            </div>
 
-          <h3>Summary by Item</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Total Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${Object.values(validEntries.reduce((acc, e) => {
-                if (!acc[e.item_name]) {
-                  acc[e.item_name] = { 
-                    item: e.item_name, 
-                    qty: 0, 
-                    cost: 0,
-                    unit: e.unit 
-                  };
-                }
-                acc[e.item_name].qty += e.quantity;
-                acc[e.item_name].cost += (e.total_cost || 0);
-                return acc;
-              }, {})).map(item => `
+            <h3>Summary by Item</h3>
+            <table>
+              <thead>
                 <tr>
-                  <td>${item.item}</td>
-                  <td>${item.qty} ${item.unit}</td>
-                  <td>€${item.cost.toFixed(2)}</td>
+                  <th>Item</th>
+                  <th>Quantity</th>
+                  <th>Total Cost</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${Object.values(validEntries.reduce((acc, e) => {
+                  if (!acc[e.item_name]) {
+                    acc[e.item_name] = { 
+                      item: e.item_name, 
+                      qty: 0, 
+                      cost: 0,
+                      unit: e.unit 
+                    };
+                  }
+                  acc[e.item_name].qty += e.quantity;
+                  acc[e.item_name].cost += (e.total_cost || 0);
+                  return acc;
+                }, {})).map(item => `
+                  <tr>
+                    <td>${item.item}</td>
+                    <td>${item.qty} ${item.unit}</td>
+                    <td>€${item.cost.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
 
-          <div class="footer">
-            <p>A CSV file with detailed entries is attached to this email.</p>
-            <p>Generated by The Castle Wastage Tracker</p>
+            <div class="footer">
+              <p>A CSV file with detailed entries is attached to this email.</p>
+              <p>Generated by The Castle Wastage Tracker</p>
+            </div>
           </div>
-        </div>
-      </body>
-      </html>
-    `;
+        </body>
+        </html>
+      `;
 
-    // Send email
-    const msg = {
-      to: REPORT_EMAIL,
-      from: FROM_EMAIL,
-      subject: `Wastage Report ${startDate.format('DD.MM.YYYY')}`,
-      html: htmlContent,
-      attachments: [
-        {
-          content: Buffer.from(csvContent).toString('base64'),
-          filename: `wastage-${startDate.format('YYYY-MM-DD')}.csv`,
-          type: 'text/csv',
-          disposition: 'attachment'
-        }
-      ]
-    };
+      // Send email
+      const msg = {
+        to: REPORT_EMAIL,
+        from: FROM_EMAIL,
+        subject: `Wastage Report ${startDate.format('DD.MM.YYYY')}`,
+        html: htmlContent,
+        attachments: [
+          {
+            content: Buffer.from(csvContent).toString('base64'),
+            filename: `wastage-${startDate.format('YYYY-MM-DD')}.csv`,
+            type: 'text/csv',
+            disposition: 'attachment'
+          }
+        ]
+      };
 
-    await sgMail.send(msg);
-    console.log('✅ Report sent successfully');
+      await sgMail.send(msg);
+      console.log('✅ Report sent successfully');
+
+    } catch (err) {
+      console.error('❌ Failed to fetch data:', err.message);
+      process.exit(1);
+    }
 
   } catch (err) {
     console.error('❌ Failed to send report:', err.message);
