@@ -13,7 +13,51 @@ dayjs.extend(timezone);
 // Set timezone to UTC
 dayjs.tz.setDefault('UTC');
 
-// Calculate the time window using actual current date
+// Helper function to sleep
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to fetch with retries
+async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
+  let lastError;
+  let delay = initialDelay;
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`Attempt ${i + 1}/${maxRetries} to fetch data...`);
+      const res = await fetch(url);
+      
+      if (res.ok) {
+        return res;
+      }
+
+      const errorText = await res.text();
+      lastError = new Error(`API request failed with status ${res.status}: ${errorText}`);
+      
+      // If it's a 502, wait and retry
+      if (res.status === 502) {
+        console.log(`Got 502 error, waiting ${delay/1000} seconds before retry...`);
+        await sleep(delay);
+        delay *= 2; // Double the delay for next attempt
+        continue;
+      }
+      
+      // For other errors, throw immediately
+      throw lastError;
+    } catch (err) {
+      lastError = err;
+      console.log(`Request failed: ${err.message}`);
+      if (i < maxRetries - 1) {
+        console.log(`Waiting ${delay/1000} seconds before retry...`);
+        await sleep(delay);
+        delay *= 2;
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+// Calculate the time window
 const now = dayjs();
 const realNow = new Date();
 console.log('\n=== Debug Info ===');
@@ -50,7 +94,7 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
   try {
     // 1. Fetch entries
     console.log('\n=== Time Window Information ===');
-    console.log('Current time:', now.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('Current time:', nowWithCorrectYear.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     console.log('\n=== API Request ===');
@@ -59,10 +103,22 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     console.log('End date (ISO):', endDate.toISOString());
     console.log('===========================\n');
     
-    const res = await fetch(API_URL);
-    if (!res.ok) {
-      throw new Error(`API request failed with status ${res.status}: ${await res.text()}`);
+    // First check if the server is up by hitting the health endpoint
+    console.log('Checking server health...');
+    try {
+      const healthCheck = await fetch('https://wastagetracker-production.up.railway.app/');
+      if (!healthCheck.ok) {
+        throw new Error(`Health check failed with status ${healthCheck.status}`);
+      }
+      console.log('Server is healthy');
+    } catch (err) {
+      console.log('Health check failed:', err.message);
+      console.log('Will try API endpoint anyway...');
     }
+
+    // Try to fetch entries with retries
+    console.log('Fetching entries from API...');
+    const res = await fetchWithRetries(API_URL);
     const data = await res.json();
 
     const entries = data.entries || data;
