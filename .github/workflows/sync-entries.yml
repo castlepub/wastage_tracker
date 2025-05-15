@@ -1,0 +1,48 @@
+name: Sync Entries from Railway
+
+on:
+  schedule:
+    - cron: '55 5 * * *'  # Run at 5:55 AM UTC daily (just before the report)
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-entries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create data directory
+      run: mkdir -p data
+        
+    - name: Download entries from Railway
+      env:
+        APP_URL: ${{ vars.APP_URL || 'https://wastagetracker-production.up.railway.app' }}
+        EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
+      run: |
+        echo "Downloading entries from Railway..."
+        curl -s -H "Authorization: Bearer $EXPORT_TOKEN" "$APP_URL/api/export-entries" > data/entries.json
+        
+        # Validate JSON and entry count
+        echo "Validating downloaded data..."
+        if ! jq empty data/entries.json 2>/dev/null; then
+          echo "❌ Downloaded file is not valid JSON"
+          exit 1
+        fi
+        
+        COUNT=$(jq length data/entries.json)
+        echo "✅ Successfully downloaded $COUNT entries"
+        
+    - name: Commit and push if changed
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        if git diff --quiet data/entries.json; then
+          echo "No changes to entries.json"
+        else
+          git add data/entries.json
+          git commit -m "Update entries.json [skip ci]"
+          git push
+        fi 
