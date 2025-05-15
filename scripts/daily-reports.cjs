@@ -88,7 +88,7 @@ if (nowWithCorrectYear.isBefore(today6AM)) {
 const reportDate = startDate.format('YYYY-MM-DD');
 
 // Ensure we're using 6 AM UTC in the API URL
-const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.format()}Z&end=${endDate.format()}Z`;
+const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.utc().format('YYYY-MM-DDTHH:mm:ss')}Z&end=${endDate.utc().format('YYYY-MM-DDTHH:mm:ss')}Z`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
