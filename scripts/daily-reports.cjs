@@ -15,6 +15,11 @@ dayjs.tz.setDefault('UTC');
 
 // Calculate the time window
 const now = dayjs().utc();
+console.log('\n=== Debug Info ===');
+console.log('System time:', new Date().toISOString());
+console.log('Dayjs time:', now.toISOString());
+console.log('===========================\n');
+
 const today6AM = now.startOf('day').add(6, 'hour');
 let startDate, endDate;
 
@@ -58,6 +63,13 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
       throw new Error('API did not return a list');
     }
     console.log(`Found ${entries.length} entries for this period`);
+    
+    // Log each entry's timestamp for debugging
+    console.log('\n=== Entries Found ===');
+    entries.forEach(e => {
+      console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit} - Time: ${dayjs(e.timestamp).format('YYYY-MM-DD HH:mm:ss')} UTC`);
+    });
+    console.log('===========================\n');
 
     // 2. Format CSV
     const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time', 'Cost (€)'];
