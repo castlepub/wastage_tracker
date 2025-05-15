@@ -44,6 +44,15 @@ if (!fs.existsSync(csvPath)) {
   process.exit(1);
 }
 
+// Read the first few bytes of the file to check for BOM and encoding
+const fileHeader = fs.readFileSync(csvPath, { encoding: null, flag: 'r' }).slice(0, 4);
+console.log('File header bytes:', fileHeader);
+console.log('File header string:', fileHeader.toString());
+
+// Read first line of file to check headers
+const firstLine = fs.readFileSync(csvPath, 'utf8').split('\n')[0];
+console.log('First line of CSV:', firstLine);
+
 console.log('Reading CSV file...');
 
 // Add timeout for the entire process
@@ -52,10 +61,19 @@ const timeout = setTimeout(() => {
   process.exit(1);
 }, 30000);
 
+let headersPrinted = false;
+
 const stream = fs.createReadStream(csvPath)
   .pipe(csv({
     separator: ';',
-    mapHeaders: ({ header }) => header.replace(/^\uFEFF/, '').trim()
+    mapHeaders: ({ header }) => {
+      const cleaned = header.replace(/^\uFEFF/, '').trim();
+      if (!headersPrinted) {
+        console.log('CSV Header:', header);
+        console.log('Cleaned Header:', cleaned);
+      }
+      return cleaned;
+    }
   }));
 
 stream.on('error', (error) => {
@@ -65,7 +83,20 @@ stream.on('error', (error) => {
 });
 
 stream.on('data', row => {
-  console.log('Read row:', row.name || 'unnamed');
+  // Print the first row's structure
+  if (rows.length === 0) {
+    console.log('First row structure:', JSON.stringify(row, null, 2));
+    console.log('Available columns:', Object.keys(row));
+    headersPrinted = true;
+  }
+  
+  // Log row details for debugging
+  console.log('Row:', {
+    raw: row,
+    name: row.name || row.Name || row.NAME,
+    keys: Object.keys(row)
+  });
+  
   rows.push(row);
 });
 
@@ -85,15 +116,38 @@ stream.on('end', async () => {
 
     // 2) Determine CSV columns
     console.log('Analyzing CSV structure...');
-    const keys    = Object.keys(rows[0] || {});
-    const nameKey = keys.find(k => k.toLowerCase() === 'name');
-    const costKey = keys.find(k => k.toLowerCase().includes('cost price'));
-    const unitCol = keys.find(k => k.toLowerCase().includes('package unit'));
+    const keys = Object.keys(rows[0] || {});
+    console.log('Available keys:', keys);
+    
+    // Try different possible column names
+    const nameKey = keys.find(k => 
+      k.toLowerCase() === 'name' || 
+      k.toLowerCase().includes('item') ||
+      k.toLowerCase().includes('product')
+    );
+    const costKey = keys.find(k => 
+      k.toLowerCase().includes('cost') || 
+      k.toLowerCase().includes('price')
+    );
+    const unitCol = keys.find(k => 
+      k.toLowerCase().includes('unit') || 
+      k.toLowerCase().includes('package')
+    );
+
+    console.log('Found columns:', {
+      nameKey,
+      costKey,
+      unitCol,
+      sampleValue: rows[0] ? {
+        name: rows[0][nameKey],
+        cost: rows[0][costKey],
+        unit: rows[0][unitCol]
+      } : null
+    });
 
     if (!nameKey) {
-      throw new Error('Could not find name column in CSV');
+      throw new Error('Could not find name column in CSV. Available columns: ' + keys.join(', '));
     }
-    console.log('Found columns:', { nameKey, costKey, unitCol });
 
     // 3) Unit inference
     const inferUnit = r => {
