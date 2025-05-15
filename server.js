@@ -187,6 +187,34 @@ app.get('/health', async (req, res) => {
 // Health check
 app.get('/', (_req, res) => res.send('OK'));
 
+// Add error handling for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  // Don't exit the process, just log the error
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Promise Rejection:', err);
+  // Don't exit the process, just log the error
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  db.end(() => {
+    console.log('Database connection closed.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  db.end(() => {
+    console.log('Database connection closed.');
+    process.exit(0);
+  });
+});
+
 // Add export endpoint with token auth
 app.get('/api/export-entries', async (req, res) => {
   console.log('Export endpoint called');
@@ -212,7 +240,7 @@ app.get('/api/export-entries', async (req, res) => {
       id: entry.id,
       employee_name: entry.employee_name,
       item_name: entry.item_name,
-      quantity: entry.quantity,
+      quantity: parseFloat(entry.quantity),
       unit: entry.unit,
       reason: entry.reason,
       timestamp: entry.timestamp,
@@ -225,8 +253,7 @@ app.get('/api/export-entries', async (req, res) => {
     console.error('Export failed:', err);
     res.status(500).json({ 
       error: 'Failed to export entries',
-      details: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      details: err.message
     });
   }
 });
@@ -235,25 +262,4 @@ app.get('/api/export-entries', async (req, res) => {
 initialize().catch(err => {
   console.error('Failed to start server:', err);
   process.exit(1);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('Shutting down...');
-  server.close(async () => {
-    console.log('HTTP server closed');
-    await db.end();
-    console.log('Database connections closed');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('Shutting down...');
-  server.close(async () => {
-    console.log('HTTP server closed');
-    await db.end();
-    console.log('Database connections closed');
-    process.exit(0);
-  });
 });
