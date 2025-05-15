@@ -138,12 +138,23 @@ app.get('/api/entries', async (req, res) => {
         (w.quantity * ic.unit_cost) as total_cost
       FROM wastage_entries w
       LEFT JOIN item_costs ic ON w.item_name = ic.item_name
-      WHERE w.timestamp >= $1::timestamptz
-      AND w.timestamp < $2::timestamptz
-      ORDER BY w.timestamp DESC
     `;
+
+    const params = [];
     
-    const { rows } = await db.query(query, [start, end]);
+    // Only add WHERE clause if both start and end dates are provided
+    if (start && end) {
+      query += `
+        WHERE w.timestamp >= $1::timestamptz
+        AND w.timestamp < $2::timestamptz
+      `;
+      params.push(start, end);
+    }
+
+    // Always order by timestamp
+    query += ` ORDER BY w.timestamp DESC`;
+    
+    const { rows } = await db.query(query, params);
     res.json({ entries: rows });
   } catch (err) {
     console.error('Error fetching entries:', err);
