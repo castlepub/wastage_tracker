@@ -87,7 +87,8 @@ if (nowWithCorrectYear.isBefore(today6AM)) {
 // Use the date of the start of the period for the filename
 const reportDate = startDate.format('YYYY-MM-DD');
 
-const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+// Ensure we're using 6 AM UTC in the API URL
+const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.format()}Z&end=${endDate.format()}Z`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
@@ -129,8 +130,17 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     
     // Log each entry's timestamp for debugging
     console.log('\n=== Entries Found ===');
+    console.log('Time window:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC to', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
     entries.forEach(e => {
-      console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit} - Time: ${dayjs(e.timestamp).format('YYYY-MM-DD HH:mm:ss')} UTC`);
+      const entryTime = dayjs(e.timestamp);
+      const isInWindow = entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
+      console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit}`);
+      console.log(`  Time: ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
+      console.log(`  In window: ${isInWindow ? 'YES' : 'NO'}`);
+      console.log(`  Raw timestamp: ${e.timestamp}`);
+      if (!isInWindow) {
+        console.log(`  WARNING: Entry outside time window!`);
+      }
     });
     console.log('===========================\n');
 
