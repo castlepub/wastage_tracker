@@ -58,25 +58,17 @@ async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
 }
 
 // Calculate the time window
-const now = dayjs();
-const realNow = new Date();
+const now = dayjs().utc(); // Ensure we're working in UTC
 console.log('\n=== Debug Info ===');
-console.log('System time:', realNow.toISOString());
-console.log('Current year:', realNow.getFullYear());
-console.log('Dayjs time before:', now.toISOString());
+console.log('Current UTC time:', now.format('YYYY-MM-DD HH:mm:ss'));
 
-// Force current year
-const currentYear = realNow.getFullYear();
-const nowWithCorrectYear = now.year(currentYear);
-console.log('Dayjs time after:', nowWithCorrectYear.toISOString());
-console.log('===========================\n');
-
-const today6AM = nowWithCorrectYear.startOf('day').add(6, 'hour');
+// Calculate the 6 AM window
+const today6AM = now.startOf('day').add(6, 'hour');
 let startDate, endDate;
 
 // If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
 // If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
-if (nowWithCorrectYear.isBefore(today6AM)) {
+if (now.isBefore(today6AM)) {
     startDate = today6AM.subtract(24, 'hour');
     endDate = today6AM;
 } else {
@@ -87,17 +79,17 @@ if (nowWithCorrectYear.isBefore(today6AM)) {
 // Use the date of the start of the period for the filename
 const reportDate = startDate.format('YYYY-MM-DD');
 
-// Ensure we're using 6 AM UTC in the API URL
-const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.utc().format('YYYY-MM-DDTHH:mm:ss')}Z&end=${endDate.utc().format('YYYY-MM-DDTHH:mm:ss')}Z`;
+// Ensure we're using exact ISO 8601 UTC timestamps in the API URL
+const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
   try {
     // 1. Fetch entries
     console.log('\n=== Time Window Information ===');
-    console.log('Current time:', nowWithCorrectYear.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
-    console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
-    console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('Current time:', now.format('YYYY-MM-DD HH:mm:ss'));
+    console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'));
+    console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'));
     console.log('\n=== API Request ===');
     console.log('API URL:', API_URL);
     console.log('Start date (ISO):', startDate.toISOString());
@@ -130,33 +122,48 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     
     // Log each entry's timestamp for debugging
     console.log('\n=== Entries Found ===');
-    console.log('Time window:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC to', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
-    entries.forEach(e => {
-      const entryTime = dayjs(e.timestamp);
-      const isInWindow = entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
-      console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit}`);
-      console.log(`  Time: ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
-      console.log(`  In window: ${isInWindow ? 'YES' : 'NO'}`);
-      console.log(`  Raw timestamp: ${e.timestamp}`);
-      if (!isInWindow) {
-        console.log(`  WARNING: Entry outside time window!`);
-      }
+    console.log('Time window:', startDate.format('YYYY-MM-DD HH:mm:ss') + ' to ' + endDate.format('YYYY-MM-DD HH:mm:ss'));
+    
+    // Filter entries to ensure they're in the correct time window
+    const validEntries = entries.filter(e => {
+        const entryTime = dayjs(e.utc_timestamp || e.timestamp).utc();
+        const isValid = entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
+        
+        if (!isValid) {
+            console.log(`Filtered out entry: ${e.item_name} at ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
+            console.log(`  - Outside window: ${startDate.format('YYYY-MM-DD HH:mm:ss')} to ${endDate.format('YYYY-MM-DD HH:mm:ss')} UTC`);
+        }
+        
+        return isValid;
+    });
+
+    console.log(`\nValid entries in time window: ${validEntries.length}`);
+    validEntries.forEach(e => {
+        const entryTime = dayjs(e.utc_timestamp || e.timestamp).utc();
+        console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit}`);
+        console.log(`  Time: ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
+        console.log(`  Raw timestamp: ${e.timestamp}`);
+        console.log(`  UTC timestamp: ${e.utc_timestamp || 'N/A'}`);
     });
     console.log('===========================\n');
 
     // 2. Format CSV
-    const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time', 'Cost (€)'];
-    const rows = entries.map(e => [
+    const headers = ['Employee', 'Item', 'Qty', 'Unit', 'Reason', 'Time (UTC)', 'Cost (€)'];
+    const rows = validEntries.map(e => [
       e.employee_name,
       e.item_name,
       e.quantity,
       e.unit,
       e.reason || '',
-      dayjs(e.timestamp).format('DD.MM.YYYY HH:mm'),
+      dayjs(e.utc_timestamp || e.timestamp).utc().format('DD.MM.YYYY HH:mm:ss'),
       e.total_cost?.toFixed(2) || '0.00'
     ]);
 
-    const csvContent = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(r => r.join(';'))
+    ].join('\n');
+
     const filename = `wastage-${reportDate}.csv`;
     
     // 3. Initialize Dropbox with more detailed error handling
