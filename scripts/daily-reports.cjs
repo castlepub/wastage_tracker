@@ -17,31 +17,55 @@ dayjs.tz.setDefault('UTC');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to fetch with retries
-async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
+async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay = 5000) {
   let lastError;
   let delay = initialDelay;
 
   for (let i = 0; i < maxRetries; i++) {
     try {
-      console.log(`Attempt ${i + 1}/${maxRetries} to fetch data...`);
+      console.log(`\nAttempt ${i + 1}/${maxRetries} to fetch data...`);
       console.log('Request URL:', url);
+      console.log('Request options:', JSON.stringify(options, null, 2));
       
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        ...options,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        }
+      });
+      
       console.log('Response status:', res.status);
       console.log('Response headers:', JSON.stringify(Object.fromEntries([...res.headers]), null, 2));
       
+      // Try to parse response as JSON first
+      let errorData;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          errorData = await res.json();
+          console.log('Response body (JSON):', JSON.stringify(errorData, null, 2));
+        } catch (e) {
+          const text = await res.text();
+          console.log('Response body (text):', text);
+          errorData = { error: text };
+        }
+      } else {
+        const text = await res.text();
+        console.log('Response body (text):', text);
+        errorData = { error: text };
+      }
+      
       if (res.ok) {
-        return res;
+        return errorData; // If successful, return the parsed JSON
       }
 
-      const errorText = await res.text();
-      console.log('Error response body:', errorText);
+      lastError = new Error(`API request failed with status ${res.status}: ${JSON.stringify(errorData)}`);
       
-      lastError = new Error(`API request failed with status ${res.status}: ${errorText}`);
-      
-      // If it's a 502, wait and retry
-      if (res.status === 502) {
-        console.log(`Got 502 error, waiting ${delay/1000} seconds before retry...`);
+      // If it's a 502 or 404, wait and retry
+      if (res.status === 502 || res.status === 404) {
+        console.log(`Got ${res.status} error, waiting ${delay/1000} seconds before retry...`);
         await sleep(delay);
         delay *= 2; // Double the delay for next attempt
         continue;
@@ -69,8 +93,9 @@ async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
 
 // Calculate the time window
 const now = dayjs().utc(); // Ensure we're working in UTC
-console.log('\n=== Debug Info ===');
-console.log('Current UTC time:', now.format('YYYY-MM-DD HH:mm:ss'));
+console.log('\nFetching entries for the period:');
+console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
+console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
 
 // Calculate the 6 AM window
 const today6AM = now.startOf('day').add(6, 'hour');
@@ -92,7 +117,6 @@ const reportDate = startDate.format('YYYY-MM-DD');
 // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
 const BASE_URL = 'https://wastagetracker-production.up.railway.app';
 const API_ENDPOINT = '/api/entries';
-const API_URL = `${BASE_URL}${API_ENDPOINT}?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
 
 // Health check URL
 const HEALTH_CHECK_URL = BASE_URL;
@@ -101,57 +125,37 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
   try {
-    // 1. Fetch entries
-    console.log('\n=== Time Window Information ===');
-    console.log('Current time:', now.format('YYYY-MM-DD HH:mm:ss'));
-    console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'));
-    console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'));
-    console.log('\n=== API Request ===');
-    console.log('Base URL:', BASE_URL);
-    console.log('API Endpoint:', API_ENDPOINT);
-    console.log('Full URL:', API_URL);
-    console.log('Start date (ISO):', startDate.toISOString());
-    console.log('End date (ISO):', endDate.toISOString());
-    console.log('===========================\n');
-    
-    // First check if the server is up by hitting the health endpoint
+    // 1. First do a health check
     console.log('\n=== Health Check ===');
-    console.log('1. Testing base URL:', HEALTH_CHECK_URL);
-    try {
-      const healthCheck = await fetch(HEALTH_CHECK_URL);
-      console.log('Base URL status:', healthCheck.status);
-      if (!healthCheck.ok) {
-        const errorText = await healthCheck.text();
-        console.log('Base URL error:', errorText);
-      } else {
-        console.log('Base URL is accessible');
-      }
+    console.log('Testing application health...');
+    
+    const healthData = await fetchWithRetries(HEALTH_CHECK_URL, {
+      method: 'GET'
+    });
+    console.log('Health check response:', healthData);
 
-      // Test the API endpoint without parameters
-      console.log('\n2. Testing API endpoint:', `${BASE_URL}${API_ENDPOINT}`);
-      const apiCheck = await fetch(`${BASE_URL}${API_ENDPOINT}`);
-      console.log('API endpoint status:', apiCheck.status);
-      if (!apiCheck.ok) {
-        const errorText = await apiCheck.text();
-        console.log('API endpoint error:', errorText);
-      } else {
-        console.log('API endpoint is accessible');
-      }
-    } catch (err) {
-      console.log('Health check failed:', err.message);
-      console.log('Error details:', err);
-      console.log('Will try API endpoint anyway...');
-    }
-    console.log('===========================\n');
+    // 2. Then try to fetch entries
+    console.log('\n=== Fetching Entries ===');
+    
+    // Try without query parameters first
+    console.log('Testing API endpoint without parameters...');
+    const testData = await fetchWithRetries(`${BASE_URL}${API_ENDPOINT}`, {
+      method: 'GET'
+    });
+    console.log('API test response:', testData);
 
-    // Try to fetch entries with retries
-    console.log('Fetching entries from API...');
-    const res = await fetchWithRetries(API_URL);
-    const data = await res.json();
+    // Now try with query parameters
+    console.log('\nFetching entries with date range...');
+    const API_URL = `${BASE_URL}${API_ENDPOINT}?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
+    console.log('Full URL:', API_URL);
+    
+    const data = await fetchWithRetries(API_URL, {
+      method: 'GET'
+    });
 
     const entries = data.entries || data;
     if (!Array.isArray(entries)) {
-      throw new Error('API did not return a list');
+      throw new Error(`API did not return a list. Response: ${JSON.stringify(data)}`);
     }
     console.log(`Found ${entries.length} entries for this period`);
     
