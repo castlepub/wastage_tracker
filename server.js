@@ -135,13 +135,20 @@ app.get('/api/entries', async (req, res) => {
   try {
     const { start, end } = req.query;
     let query = `
-      SELECT id, employee_name, item_name, quantity, unit, reason, timestamp
+      SELECT 
+        id, 
+        employee_name, 
+        item_name, 
+        quantity, 
+        unit, 
+        reason, 
+        timestamp AT TIME ZONE 'UTC' as timestamp
       FROM wastage_entries
     `;
     
     const params = [];
     if (start && end) {
-      query += ` WHERE timestamp >= $1::timestamptz AND timestamp < $2::timestamptz`;
+      query += ` WHERE timestamp >= ($1)::timestamptz AND timestamp < ($2)::timestamptz`;
       params.push(start, end);
     }
     
