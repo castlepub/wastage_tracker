@@ -13,27 +13,35 @@ dayjs.extend(timezone);
 // Set timezone to UTC
 dayjs.tz.setDefault('UTC');
 
-// Get the date range from 6 AM today to 6 AM tomorrow
+// Calculate the time window
 const now = dayjs().utc();
 const today6AM = now.startOf('day').add(6, 'hour');
-const tomorrow6AM = today6AM.add(24, 'hour');
+let startDate, endDate;
 
-// If current time is before 6 AM, we need to use yesterday 6 AM to today 6 AM
-const startDate = (now.isBefore(today6AM) ? today6AM.subtract(24, 'hour') : today6AM).toISOString();
-const endDate = (now.isBefore(today6AM) ? today6AM : tomorrow6AM).toISOString();
+// If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
+// If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
+if (now.isBefore(today6AM)) {
+    startDate = today6AM.subtract(24, 'hour');
+    endDate = today6AM;
+} else {
+    startDate = today6AM;
+    endDate = today6AM.add(24, 'hour');
+}
 
-// Use the date of the end of the period (when the report is generated) for the filename
-const reportDate = dayjs(endDate).subtract(1, 'minute').format('YYYY-MM-DD');
+// Use the date of the start of the period for the filename
+const reportDate = startDate.format('YYYY-MM-DD');
 
-const API_URL = `https://castle-wastage-tracker-production.up.railway.app/api/entries?start=${startDate}&end=${endDate}`;
+const API_URL = `https://castle-wastage-tracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
   try {
     // 1. Fetch entries
-    console.log('Fetching entries for the period:');
-    console.log('From:', dayjs(startDate).format('YYYY-MM-DD HH:mm'), 'UTC');
-    console.log('To:  ', dayjs(endDate).format('YYYY-MM-DD HH:mm'), 'UTC');
+    console.log('\n=== Time Window Information ===');
+    console.log('Current time:', now.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'), 'UTC');
+    console.log('===========================\n');
     
     const res = await fetch(API_URL);
     if (!res.ok) {
