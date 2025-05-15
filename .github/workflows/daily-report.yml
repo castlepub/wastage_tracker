@@ -1,31 +1,32 @@
-name: Daily Wastage Report to Dropbox
+name: Daily Wastage Report
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Run at 6 AM UTC daily
-  workflow_dispatch:  # Allow manual trigger
+    - cron: '0 6 * * *'  # Run at 6 AM UTC
+  workflow_dispatch:
 
 jobs:
-  generate-report:
+  send-report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    
+
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 7  # Fetch last week of history
-    
-    - name: Setup Node.js
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        
+
     - name: Install dependencies
-      run: npm install dayjs dropbox
-        
-    - name: Generate and upload report
+      run: npm install
+
+    - name: Send email report
       env:
-        DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
+        APP_URL: ${{ secrets.APP_URL }}
       run: |
-        echo "Starting report generation..."
-        node scripts/local-daily-report.cjs
+        echo "Sending daily report..."
+        node scripts/email-report.js
