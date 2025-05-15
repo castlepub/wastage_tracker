@@ -141,7 +141,7 @@ app.get('/api/entries', async (req, res) => {
     
     const params = [];
     if (start && end) {
-      query += ` WHERE timestamp >= $1 AND timestamp <= $2`;
+      query += ` WHERE timestamp >= $1::timestamptz AND timestamp < $2::timestamptz`;
       params.push(start, end);
     }
     
