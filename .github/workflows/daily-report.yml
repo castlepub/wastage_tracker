@@ -8,7 +8,7 @@ on:
 jobs:
   run-daily-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Set a timeout to avoid hanging
+    timeout-minutes: 15  # Increased timeout
 
     steps:
     - name: Checkout repo
@@ -22,41 +22,79 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Check application health
-      env:
-        APP_URL: ${{ secrets.APP_URL }}
+    - name: Wait for Railway application
       run: |
-        # Use APP_URL from secrets or default to production URL
         URL="${APP_URL:-https://wastagetracker-production.up.railway.app}"
-        echo "Checking application health at: $URL"
-        for i in {1..5}; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-          if [ $HTTP_CODE -eq 200 ]; then
-            echo "✅ Application is healthy (HTTP $HTTP_CODE)"
+        echo "Waiting for application to be available at: $URL"
+        MAX_ATTEMPTS=10
+        ATTEMPT=1
+        SUCCESS=false
+
+        while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+          echo "Attempt $ATTEMPT/$MAX_ATTEMPTS..."
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$URL")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "Response code: $HTTP_CODE"
+          echo "Response body: $BODY"
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Application is responding successfully"
+            SUCCESS=true
             break
           fi
-          echo "⚠️ Attempt $i: Application returned HTTP $HTTP_CODE"
-          if [ $i -lt 5 ]; then
-            echo "Waiting 30 seconds before retry..."
-            sleep 30
-          else
-            echo "❌ Application health check failed after 5 attempts"
-            exit 1
+          
+          echo "⚠️ Application returned HTTP $HTTP_CODE"
+          if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+            SLEEP_TIME=30
+            echo "Waiting $SLEEP_TIME seconds before next attempt..."
+            sleep $SLEEP_TIME
           fi
+          
+          ATTEMPT=$((ATTEMPT + 1))
         done
 
-    - name: Run daily-reports.cjs
+        if [ "$SUCCESS" != "true" ]; then
+          echo "❌ Application failed to respond after $MAX_ATTEMPTS attempts"
+          echo "Last response code: $HTTP_CODE"
+          echo "Last response body: $BODY"
+          echo "Please check Railway deployment status"
+          exit 1
+        fi
+      env:
+        APP_URL: ${{ secrets.APP_URL }}
+
+    - name: Run daily-reports.cjs with retries
       env:
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
         APP_URL: ${{ secrets.APP_URL }}
-        NODE_DEBUG: http,https  # Enable HTTP debugging
+        NODE_DEBUG: http,https
       run: |
-        # First try without debug
-        if node scripts/daily-reports.cjs; then
-          echo "✅ Report generated successfully"
-          exit 0
+        MAX_ATTEMPTS=5
+        ATTEMPT=1
+        SUCCESS=false
+
+        while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+          echo "Attempt $ATTEMPT/$MAX_ATTEMPTS to run daily report..."
+          
+          if node scripts/daily-reports.cjs; then
+            echo "✅ Report generated successfully"
+            SUCCESS=true
+            break
+          fi
+          
+          if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+            SLEEP_TIME=60
+            echo "⚠️ Attempt failed, waiting $SLEEP_TIME seconds before retry..."
+            sleep $SLEEP_TIME
+          fi
+          
+          ATTEMPT=$((ATTEMPT + 1))
+        done
+
+        if [ "$SUCCESS" != "true" ]; then
+          echo "❌ All attempts failed"
+          exit 1
         fi
-        
-        echo "⚠️ First attempt failed, retrying with debug..."
-        # If failed, retry with debug logging
-        node scripts/daily-reports.cjs
