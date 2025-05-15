@@ -28,44 +28,62 @@ jobs:
         echo "Downloading entries from Railway..."
         echo "Using URL: $APP_URL/api/export-entries"
         
-        # First test the endpoint
-        echo "Testing endpoint..."
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $EXPORT_TOKEN" "$APP_URL/api/export-entries")
-        echo "Initial response code: $HTTP_CODE"
+        # Function to download entries with retries
+        download_entries() {
+          local max_attempts=3
+          local attempt=1
+          local wait_time=10
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            
+            # Test endpoint first
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $EXPORT_TOKEN" "$APP_URL/api/export-entries")
+            echo "Response code: $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              # Download the actual data
+              echo "Downloading data..."
+              RESPONSE=$(curl -s -H "Authorization: Bearer $EXPORT_TOKEN" "$APP_URL/api/export-entries")
+              echo "$RESPONSE" > data/entries.json
+              
+              # Validate JSON
+              if jq empty data/entries.json 2>/dev/null; then
+                COUNT=$(jq length data/entries.json)
+                if [ "$COUNT" -gt 0 ]; then
+                  echo "✅ Successfully downloaded $COUNT entries"
+                  return 0
+                else
+                  echo "⚠️ Got 0 entries, will retry..."
+                fi
+              else
+                echo "⚠️ Invalid JSON response, will retry..."
+              fi
+            else
+              echo "⚠️ Endpoint returned $HTTP_CODE, will retry..."
+            fi
+            
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Waiting ${wait_time} seconds before next attempt..."
+              sleep $wait_time
+              wait_time=$((wait_time * 2))
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+          
+          return 1
+        }
         
-        if [ "$HTTP_CODE" = "401" ]; then
-          echo "❌ Authentication failed. Please check EXPORT_TOKEN"
+        # Try to download entries
+        if download_entries; then
+          echo "Download successful"
+          echo "First entry:"
+          jq '.[0]' data/entries.json
+        else
+          echo "❌ Failed to download entries after multiple attempts"
           exit 1
         fi
-        
-        if [ "$HTTP_CODE" != "200" ]; then
-          echo "❌ Endpoint returned $HTTP_CODE"
-          # Try without token to see if endpoint exists
-          TEST_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/api/export-entries")
-          echo "Test without token: $TEST_CODE"
-          exit 1
-        fi
-        
-        # Download the actual data
-        echo "Downloading data..."
-        RESPONSE=$(curl -s -H "Authorization: Bearer $EXPORT_TOKEN" "$APP_URL/api/export-entries")
-        echo "$RESPONSE" > data/entries.json
-        
-        # Validate JSON and entry count
-        echo "Validating downloaded data..."
-        if ! jq empty data/entries.json 2>/dev/null; then
-          echo "❌ Downloaded file is not valid JSON"
-          echo "Raw response:"
-          cat data/entries.json
-          exit 1
-        fi
-        
-        COUNT=$(jq length data/entries.json)
-        echo "✅ Successfully downloaded $COUNT entries"
-        
-        # Show sample of data
-        echo "First entry:"
-        jq '.[0]' data/entries.json
 
     - name: Commit changes
       run: |
