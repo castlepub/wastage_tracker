@@ -14,6 +14,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Create data directory
       run: mkdir -p data
@@ -64,8 +66,11 @@ jobs:
         # Show sample of data
         echo "First entry:"
         jq '.[0]' data/entries.json
-        
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: Update entries.json [skip ci]
-        file_pattern: 'data/*.json' 
+
+    - name: Commit changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add data/entries.json
+        git commit -m "Update entries.json [skip ci]" || echo "No changes to commit"
+        git push || echo "No changes to push" 
