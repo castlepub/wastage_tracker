@@ -177,23 +177,55 @@ app.get('/', (_req, res) => res.send('OK'));
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => console.log(`Listening on port ${port}`));
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('Shutting down...');
+// Graceful shutdown handler
+function shutdownGracefully(signal) {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  
+  // Set a timeout to force exit after 10 seconds
+  const forceExit = setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+  
+  // Clear the timeout if we close successfully
+  forceExit.unref();
+  
   server.close(async () => {
     console.log('HTTP server closed');
-    await db.end();
-    console.log('Database connections closed');
-    process.exit(0);
+    try {
+      await Promise.race([
+        db.end(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database shutdown timeout')), 5000)
+        )
+      ]);
+      console.log('Database connections closed');
+      clearTimeout(forceExit);
+      process.exit(0);
+    } catch (err) {
+      console.error('Error during shutdown:', err.message);
+      process.exit(1);
+    }
   });
+
+  // Stop accepting new connections immediately
+  server.unref();
+}
+
+// Handle different termination signals
+process.on('SIGTERM', () => shutdownGracefully('SIGTERM'));
+process.on('SIGINT', () => shutdownGracefully('SIGINT'));
+
+// Also handle "kill" commands
+process.on('SIGHUP', () => shutdownGracefully('SIGHUP'));
+
+// Handle uncaught exceptions and unhandled rejections
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  shutdownGracefully('UNCAUGHT_EXCEPTION');
 });
 
-process.on('SIGINT', async () => {
-  console.log('Shutting down...');
-  server.close(async () => {
-    console.log('HTTP server closed');
-    await db.end();
-    console.log('Database connections closed');
-    process.exit(0);
-  });
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  shutdownGracefully('UNHANDLED_REJECTION');
 });
