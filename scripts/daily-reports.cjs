@@ -90,8 +90,9 @@ if (now.isBefore(today6AM)) {
 const reportDate = startDate.format('YYYY-MM-DD');
 
 // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
-const BASE_URL = process.env.API_URL || 'https://wastagetracker-production.up.railway.app';
-const API_URL = `${BASE_URL}/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+const BASE_URL = 'https://wastagetracker-production.up.railway.app';
+const API_ENDPOINT = '/api/entries';
+const API_URL = `${BASE_URL}${API_ENDPOINT}?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
 
 // Health check URL
 const HEALTH_CHECK_URL = BASE_URL;
@@ -106,37 +107,42 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     console.log('Window start:', startDate.format('YYYY-MM-DD HH:mm:ss'));
     console.log('Window end:  ', endDate.format('YYYY-MM-DD HH:mm:ss'));
     console.log('\n=== API Request ===');
-    console.log('API URL:', API_URL);
+    console.log('Base URL:', BASE_URL);
+    console.log('API Endpoint:', API_ENDPOINT);
+    console.log('Full URL:', API_URL);
     console.log('Start date (ISO):', startDate.toISOString());
     console.log('End date (ISO):', endDate.toISOString());
     console.log('===========================\n');
     
     // First check if the server is up by hitting the health endpoint
     console.log('\n=== Health Check ===');
-    console.log('Health check URL:', HEALTH_CHECK_URL);
+    console.log('1. Testing base URL:', HEALTH_CHECK_URL);
     try {
       const healthCheck = await fetch(HEALTH_CHECK_URL);
-      console.log('Health check status:', healthCheck.status);
-      console.log('Health check headers:', JSON.stringify(Object.fromEntries([...healthCheck.headers]), null, 2));
-      
+      console.log('Base URL status:', healthCheck.status);
       if (!healthCheck.ok) {
         const errorText = await healthCheck.text();
-        console.log('Health check error response:', errorText);
-        throw new Error(`Health check failed with status ${healthCheck.status}`);
+        console.log('Base URL error:', errorText);
+      } else {
+        console.log('Base URL is accessible');
       }
-      console.log('Server is healthy');
-      
-      // Also try to fetch /api to check API availability
-      console.log('\nChecking API endpoint...');
-      const apiCheck = await fetch(`${BASE_URL}/api`);
-      console.log('API check status:', apiCheck.status);
+
+      // Test the API endpoint without parameters
+      console.log('\n2. Testing API endpoint:', `${BASE_URL}${API_ENDPOINT}`);
+      const apiCheck = await fetch(`${BASE_URL}${API_ENDPOINT}`);
+      console.log('API endpoint status:', apiCheck.status);
+      if (!apiCheck.ok) {
+        const errorText = await apiCheck.text();
+        console.log('API endpoint error:', errorText);
+      } else {
+        console.log('API endpoint is accessible');
+      }
     } catch (err) {
       console.log('Health check failed:', err.message);
-      if (err.cause) {
-        console.log('Error cause:', err.cause);
-      }
+      console.log('Error details:', err);
       console.log('Will try API endpoint anyway...');
     }
+    console.log('===========================\n');
 
     // Try to fetch entries with retries
     console.log('Fetching entries from API...');
