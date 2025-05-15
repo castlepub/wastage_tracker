@@ -120,19 +120,9 @@ stream.on('end', async () => {
     console.log('Available keys:', keys);
     
     // Try different possible column names
-    const nameKey = keys.find(k => 
-      k.toLowerCase() === 'name' || 
-      k.toLowerCase().includes('item') ||
-      k.toLowerCase().includes('product')
-    );
-    const costKey = keys.find(k => 
-      k.toLowerCase().includes('cost') || 
-      k.toLowerCase().includes('price')
-    );
-    const unitCol = keys.find(k => 
-      k.toLowerCase().includes('unit') || 
-      k.toLowerCase().includes('package')
-    );
+    const nameKey = keys.find(k => k === 'Name') || keys.find(k => k.toLowerCase() === 'name');
+    const costKey = keys.find(k => k === 'Cost price') || keys.find(k => k.toLowerCase().includes('cost'));
+    const unitCol = keys.find(k => k === 'Package unit (stock management)') || keys.find(k => k.toLowerCase().includes('unit'));
 
     console.log('Found columns:', {
       nameKey,
