@@ -41,7 +41,7 @@ const reportDate = startDate.format('YYYY-MM-DD');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to fetch with retries
-async function fetchWithRetries(url, options = {}, maxRetries = 5, initialDelay = 10000) {
+async function fetchWithRetries(url, options = {}, maxRetries = 8, initialDelay = 15000) {
   let lastError;
   let delay = initialDelay;
 
@@ -49,7 +49,6 @@ async function fetchWithRetries(url, options = {}, maxRetries = 5, initialDelay 
     try {
       console.log(`\nAttempt ${i + 1}/${maxRetries} to fetch data...`);
       console.log('Request URL:', url);
-      console.log('Request options:', JSON.stringify(options, null, 2));
       
       const res = await fetch(url, {
         ...options,
@@ -59,11 +58,10 @@ async function fetchWithRetries(url, options = {}, maxRetries = 5, initialDelay 
           'User-Agent': 'WastageTracker-DailyReport/1.0',
           ...(options.headers || {})
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 60000 // 60 second timeout for cold starts
       });
       
       console.log('Response status:', res.status);
-      console.log('Response headers:', JSON.stringify(Object.fromEntries([...res.headers]), null, 2));
       
       // Try to parse response as JSON first
       let errorData;
@@ -71,47 +69,40 @@ async function fetchWithRetries(url, options = {}, maxRetries = 5, initialDelay 
       if (contentType && contentType.includes('application/json')) {
         try {
           errorData = await res.json();
-          console.log('Response body (JSON):', JSON.stringify(errorData, null, 2));
         } catch (e) {
           const text = await res.text();
-          console.log('Response body (text):', text);
           errorData = { error: text };
         }
       } else {
         const text = await res.text();
-        console.log('Response body (text):', text);
         errorData = { error: text };
       }
       
       if (res.ok) {
-        return errorData; // If successful, return the parsed JSON
+        return errorData;
       }
 
       lastError = new Error(`API request failed with status ${res.status}: ${JSON.stringify(errorData)}`);
       
       // If it's a 502, 404, or 503, wait and retry (common during cold starts)
       if ([502, 404, 503].includes(res.status)) {
-        console.log(`Got ${res.status} error (possibly cold start), waiting ${delay/1000} seconds before retry...`);
-        await sleep(delay);
-        delay *= 1.5; // Increase delay by 50% for next attempt
+        const waitTime = Math.min(delay * (1 + (i * 0.5)), 120000); // Cap at 2 minutes
+        console.log(`Got ${res.status} error (cold start), waiting ${Math.round(waitTime/1000)} seconds...`);
+        await sleep(waitTime);
         continue;
       }
       
-      // For other errors, throw immediately
       throw lastError;
     } catch (err) {
       lastError = err;
       console.log(`Request failed: ${err.message}`);
-      if (err.cause) {
-        console.log('Error cause:', err.cause);
-      }
       
-      // For network errors, also retry
+      // For network errors, also retry with increasing delays
       if (err.name === 'FetchError' || err.name === 'AbortError') {
         if (i < maxRetries - 1) {
-          console.log(`Network error, waiting ${delay/1000} seconds before retry...`);
-          await sleep(delay);
-          delay *= 1.5;
+          const waitTime = Math.min(delay * (1 + (i * 0.5)), 120000);
+          console.log(`Network error, waiting ${Math.round(waitTime/1000)} seconds...`);
+          await sleep(waitTime);
           continue;
         }
       }
