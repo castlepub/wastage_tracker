@@ -14,8 +14,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Create data directory
       run: mkdir -p data
@@ -85,10 +83,9 @@ jobs:
           exit 1
         fi
 
-    - name: Commit changes
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add data/entries.json
-        git commit -m "Update entries.json [skip ci]" || echo "No changes to commit"
-        git push || echo "No changes to push" 
+    - name: Commit and push changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: 'data/entries.json'
+        message: 'Update entries.json [skip ci]'
+        push: true 
