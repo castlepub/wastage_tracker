@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "seed:costs": "node scripts/seedCosts.js",
-    "start":     "npm run seed:costs && node server.js"
+    "start": "node scripts/seedCosts.js && (node server.js || exit 1)"
   },
   "dependencies": {
     "express":    "^4.18.2",
