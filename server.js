@@ -162,8 +162,74 @@ app.get('/api/entries', async (req, res) => {
   }
 });
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    const client = await db.connect();
+    client.release();
+    
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (err) {
+    console.error('Health check failed:', err);
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: err.message
+    });
+  }
+});
+
 // Health check
 app.get('/', (_req, res) => res.send('OK'));
+
+// Add export endpoint with token auth
+app.get('/api/export-entries', async (req, res) => {
+  console.log('Export endpoint called');
+  
+  const token = req.headers.authorization?.split(' ')[1];
+  console.log('Received token:', token ? '(present)' : '(missing)');
+  
+  if (!token || token !== process.env.EXPORT_TOKEN) {
+    console.log('Invalid or missing token');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    console.log('Fetching entries from database...');
+    const entries = await db.query(
+      'SELECT * FROM wastage_entries ORDER BY timestamp DESC'
+    );
+    
+    console.log(`Found ${entries.rows.length} entries`);
+    
+    // Ensure we're sending a valid JSON array
+    const sanitizedEntries = entries.rows.map(entry => ({
+      id: entry.id,
+      employee_name: entry.employee_name,
+      item_name: entry.item_name,
+      quantity: entry.quantity,
+      unit: entry.unit,
+      reason: entry.reason,
+      timestamp: entry.timestamp,
+      total_cost: parseFloat(entry.total_cost || 0)
+    }));
+
+    console.log('Sending response...');
+    res.json(sanitizedEntries);
+  } catch (err) {
+    console.error('Export failed:', err);
+    res.status(500).json({ 
+      error: 'Failed to export entries',
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
 
 // Initialize the application
 initialize().catch(err => {
