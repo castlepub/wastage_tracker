@@ -1,0 +1,32 @@
+name: Monthly Wastage Report
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'  # Run at 6 AM UTC on the first day of each month
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # Increased timeout for larger data sets
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Send monthly report
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
+        APP_URL: ${{ secrets.APP_URL }}
+      run: |
+        echo "Sending monthly report..."
+        node scripts/monthly-report.js 
