@@ -90,8 +90,8 @@ async function generateReport() {
     console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
 
     // Fetch entries
-    const BASE_URL = process.env.APP_URL || 'https://wastagetracker-production.up.railway.app';
-    const API_URL = `${BASE_URL}/api/entries?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
+    const BASE_URL = process.env.APP_URL ? process.env.APP_URL.replace(/\/$/, '') : 'https://wastagetracker-production.up.railway.app';
+    const API_URL = new URL(`/api/entries`, BASE_URL).toString() + `?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
     
     const data = await fetchWithRetries(API_URL);
     const entries = data.entries || [];
