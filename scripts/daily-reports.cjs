@@ -31,7 +31,7 @@ if (now.isBefore(today6AM)) {
 // Use the date of the start of the period for the filename
 const reportDate = startDate.format('YYYY-MM-DD');
 
-const API_URL = `https://wastage-tracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
