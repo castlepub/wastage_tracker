@@ -41,7 +41,7 @@ const reportDate = startDate.format('YYYY-MM-DD');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to fetch with retries
-async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay = 5000) {
+async function fetchWithRetries(url, options = {}, maxRetries = 5, initialDelay = 10000) {
   let lastError;
   let delay = initialDelay;
 
@@ -56,8 +56,10 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'User-Agent': 'WastageTracker-DailyReport/1.0',
           ...(options.headers || {})
-        }
+        },
+        timeout: 30000 // 30 second timeout
       });
       
       console.log('Response status:', res.status);
@@ -87,11 +89,11 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
 
       lastError = new Error(`API request failed with status ${res.status}: ${JSON.stringify(errorData)}`);
       
-      // If it's a 502 or 404, wait and retry
-      if (res.status === 502 || res.status === 404) {
-        console.log(`Got ${res.status} error, waiting ${delay/1000} seconds before retry...`);
+      // If it's a 502, 404, or 503, wait and retry (common during cold starts)
+      if ([502, 404, 503].includes(res.status)) {
+        console.log(`Got ${res.status} error (possibly cold start), waiting ${delay/1000} seconds before retry...`);
         await sleep(delay);
-        delay *= 2; // Double the delay for next attempt
+        delay *= 1.5; // Increase delay by 50% for next attempt
         continue;
       }
       
@@ -104,11 +106,17 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
         console.log('Error cause:', err.cause);
       }
       
-      if (i < maxRetries - 1) {
-        console.log(`Waiting ${delay/1000} seconds before retry...`);
-        await sleep(delay);
-        delay *= 2;
+      // For network errors, also retry
+      if (err.name === 'FetchError' || err.name === 'AbortError') {
+        if (i < maxRetries - 1) {
+          console.log(`Network error, waiting ${delay/1000} seconds before retry...`);
+          await sleep(delay);
+          delay *= 1.5;
+          continue;
+        }
       }
+      
+      throw lastError;
     }
   }
   
@@ -116,7 +124,7 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
 }
 
 // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
-const BASE_URL = 'https://wastagetracker-production.up.railway.app';
+const BASE_URL = process.env.APP_URL || 'https://wastagetracker-production.up.railway.app';
 const API_ENDPOINT = '/api/entries';
 
 // Health check URL
@@ -130,14 +138,44 @@ if (!DROPBOX_TOKEN) {
 
 (async () => {
   try {
-    // 1. First do a health check
+    // Log the URL we're using
+    console.log('\n=== Configuration ===');
+    console.log('Using API URL:', BASE_URL);
+    
+    // Pre-warm the application
+    console.log('\n=== Pre-warming Application ===');
+    console.log('Sending initial request to wake up the application...');
+    try {
+      await fetch(BASE_URL, { 
+        method: 'GET',
+        timeout: 5000 
+      }).catch(() => {}); // Ignore errors from this request
+      
+      // Give the application a moment to wake up
+      console.log('Waiting 10 seconds for application to warm up...');
+      await sleep(10000);
+    } catch (err) {
+      // Ignore pre-warm errors
+      console.log('Pre-warm request failed (this is okay)');
+    }
+    
+    // 1. Then do the health check
     console.log('\n=== Health Check ===');
     console.log('Testing application health...');
     
-    const healthData = await fetchWithRetries(HEALTH_CHECK_URL, {
-      method: 'GET'
-    });
-    console.log('Health check response:', healthData);
+    try {
+      const healthData = await fetchWithRetries(HEALTH_CHECK_URL, {
+        method: 'GET'
+      });
+      console.log('Health check response:', healthData);
+    } catch (err) {
+      console.error('❌ Health check failed:', err.message);
+      console.error('Please verify:');
+      console.error('1. The application is running on Railway');
+      console.error('2. The APP_URL environment variable is set correctly');
+      console.error(`3. The URL ${BASE_URL} is accessible`);
+      process.exit(1);
+    }
 
     // 2. Then try to fetch entries
     console.log('\n=== Fetching Entries ===');
