@@ -8,6 +8,7 @@ on:
 jobs:
   run-daily-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Set a timeout to avoid hanging
 
     steps:
     - name: Checkout repo
@@ -21,7 +22,36 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Check application health
+      run: |
+        echo "Checking application health..."
+        for i in {1..5}; do
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://wastagetracker-production.up.railway.app)
+          if [ $HTTP_CODE -eq 200 ]; then
+            echo "✅ Application is healthy (HTTP $HTTP_CODE)"
+            break
+          fi
+          echo "⚠️ Attempt $i: Application returned HTTP $HTTP_CODE"
+          if [ $i -lt 5 ]; then
+            echo "Waiting 30 seconds before retry..."
+            sleep 30
+          else
+            echo "❌ Application health check failed after 5 attempts"
+            exit 1
+          fi
+        done
+
     - name: Run daily-reports.cjs
       env:
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
-      run: node scripts/daily-reports.cjs
+        NODE_DEBUG: http,https  # Enable HTTP debugging
+      run: |
+        # First try without debug
+        if node scripts/daily-reports.cjs; then
+          echo "✅ Report generated successfully"
+          exit 0
+        fi
+        
+        echo "⚠️ First attempt failed, retrying with debug..."
+        # If failed, retry with debug logging
+        node scripts/daily-reports.cjs
