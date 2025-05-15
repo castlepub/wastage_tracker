@@ -134,27 +134,35 @@ app.get('/api/items', async (_req, res) => {
 app.get('/api/entries', async (req, res) => {
   try {
     const { start, end } = req.query;
+    console.log('\n=== Entries Request Debug ===');
+    console.log('Start date:', start);
+    console.log('End date:', end);
+    console.log('Parsed start:', new Date(start).toISOString());
+    console.log('Parsed end:', new Date(end).toISOString());
+
     let query = `
       SELECT 
-        id, 
-        employee_name, 
-        item_name, 
-        quantity, 
-        unit, 
-        reason, 
-        timestamp AT TIME ZONE 'UTC' as timestamp
-      FROM wastage_entries
+        w.*,
+        w.timestamp AT TIME ZONE 'UTC' as utc_timestamp,
+        ic.unit_cost,
+        (w.quantity * ic.unit_cost) as total_cost
+      FROM wastage_entries w
+      LEFT JOIN item_costs ic ON w.item_name = ic.item_name
+      WHERE w.timestamp >= $1::timestamptz
+      AND w.timestamp < $2::timestamptz
+      ORDER BY w.timestamp DESC
     `;
     
-    const params = [];
-    if (start && end) {
-      query += ` WHERE timestamp >= ($1)::timestamptz AND timestamp < ($2)::timestamptz`;
-      params.push(start, end);
+    const { rows } = await db.query(query, [start, end]);
+    console.log('\nFiltered entries:', rows.length);
+    console.log('\nExample entries:');
+    if (rows.length > 0) {
+      rows.slice(0, 3).forEach(row => {
+        console.log(`Entry: ${row.item_name} at ${row.utc_timestamp} (${row.timestamp})`);
+      });
     }
+    console.log('===========================\n');
     
-    query += ` ORDER BY timestamp DESC`;
-    
-    const { rows } = await db.query(query, params);
     res.json({ entries: rows });
   } catch (err) {
     console.error('Error fetching entries:', err);
