@@ -16,48 +16,34 @@ dayjs.tz.setDefault('UTC');
 // Helper function to sleep
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Initialize configuration
+const config = {
+  now: dayjs().utc(),
+  BASE_URL: process.env.APP_URL || 'https://wastagetracker-production.up.railway.app',
+  DROPBOX_TOKEN: process.env.DROPBOX_TOKEN
+};
+
+// Calculate time window
+const today6AM = config.now.startOf('day').add(6, 'hour');
+config.startDate = config.now.isBefore(today6AM) 
+  ? today6AM.subtract(24, 'hour')
+  : today6AM;
+config.endDate = config.startDate.add(24, 'hour');
+
+// Print startup information immediately
+console.log('\n=== Startup Information ===');
+console.log('Current time (UTC):', config.now.format('YYYY-MM-DD HH:mm:ss'));
+console.log('API URL:', config.BASE_URL);
+console.log('Health URL:', `${config.BASE_URL}/health`);
+console.log('Dropbox enabled:', !!config.DROPBOX_TOKEN);
+
+console.log('\nFetching entries for the period:');
+console.log('From:', config.startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
+console.log('To:  ', config.endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
+
 // Main async function
 async function main() {
   try {
-    // Calculate the time window
-    const now = dayjs().utc(); // Ensure we're working in UTC
-
-    // Calculate the 6 AM window
-    const today6AM = now.startOf('day').add(6, 'hour');
-    let startDate, endDate;
-
-    // If current time is before 6 AM UTC, use yesterday 6 AM to today 6 AM
-    // If current time is after 6 AM UTC, use today 6 AM to tomorrow 6 AM
-    if (now.isBefore(today6AM)) {
-        startDate = today6AM.subtract(24, 'hour');
-        endDate = today6AM;
-    } else {
-        startDate = today6AM;
-        endDate = today6AM.add(24, 'hour');
-    }
-
-    // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
-    const BASE_URL = process.env.APP_URL || 'https://wastagetracker-production.up.railway.app';
-    const API_ENDPOINT = '/api/entries';
-    const HEALTH_CHECK_URL = `${BASE_URL}/health`;
-
-    // Make Dropbox token optional for testing
-    const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-    if (!DROPBOX_TOKEN) {
-      console.warn('\n⚠️ Warning: DROPBOX_TOKEN not set. Will fetch data but skip uploading to Dropbox.');
-    }
-
-    // Print startup information
-    console.log('\n=== Startup Information ===');
-    console.log('Current time (UTC):', now.format('YYYY-MM-DD HH:mm:ss'));
-    console.log('API URL:', BASE_URL);
-    console.log('Health URL:', HEALTH_CHECK_URL);
-    console.log('Dropbox enabled:', !!DROPBOX_TOKEN);
-
-    console.log('\nFetching entries for the period:');
-    console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
-    console.log('To:  ', endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
-
     // Pre-warm the application with multiple attempts
     console.log('\n=== Pre-warming Application ===');
     console.log('Sending initial requests to wake up the application...');
@@ -68,7 +54,7 @@ async function main() {
     for (let i = 0; i < 3; i++) {
       try {
         console.log(`Pre-warm attempt ${i + 1}/3...`);
-        const res = await fetch(BASE_URL, { 
+        const res = await fetch(config.BASE_URL, { 
           method: 'GET',
           timeout: 30000,
           headers: {
@@ -99,7 +85,7 @@ async function main() {
     }
 
     if (!preWarmSuccess) {
-      console.log('\n⚠️ All pre-warm attempts failed, but continuing anyway...');
+      throw new Error('Failed to pre-warm the application after 3 attempts');
     }
     
     // Give the application a moment to fully initialize
@@ -111,7 +97,7 @@ async function main() {
     console.log('\n=== Health Check ===');
     console.log('Testing application health...');
     
-    const healthRes = await fetch(HEALTH_CHECK_URL, {
+    const healthRes = await fetch(`${config.BASE_URL}/health`, {
       method: 'GET',
       timeout: 30000,
       headers: {
@@ -121,7 +107,8 @@ async function main() {
     });
 
     if (!healthRes.ok) {
-      throw new Error(`Health check failed with status ${healthRes.status}`);
+      const text = await healthRes.text();
+      throw new Error(`Health check failed with status ${healthRes.status}: ${text}`);
     }
 
     const healthData = await healthRes.json();
@@ -136,7 +123,7 @@ async function main() {
     
     // Now try with query parameters
     console.log('\nFetching entries with date range...');
-    const API_URL = `${BASE_URL}${API_ENDPOINT}?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`;
+    const API_URL = `${config.BASE_URL}/api/entries?start=${encodeURIComponent(config.startDate.toISOString())}&end=${encodeURIComponent(config.endDate.toISOString())}`;
     console.log('Full URL:', API_URL);
     
     const entriesRes = await fetch(API_URL, {
@@ -171,11 +158,11 @@ async function main() {
         }
 
         const entryTime = dayjs(e.timestamp).utc();
-        const isValid = entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
+        const isValid = entryTime.isAfter(config.startDate) && entryTime.isBefore(config.endDate);
         
         if (!isValid) {
             console.log(`Filtered out entry: ${e.item_name} at ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
-            console.log(`  - Outside window: ${startDate.format('YYYY-MM-DD HH:mm:ss')} to ${endDate.format('YYYY-MM-DD HH:mm:ss')} UTC`);
+            console.log(`  - Outside window: ${config.startDate.format('YYYY-MM-DD HH:mm:ss')} to ${config.endDate.format('YYYY-MM-DD HH:mm:ss')} UTC`);
         }
         
         return isValid;
@@ -212,7 +199,7 @@ async function main() {
     ].join('\n');
 
     // Only try to upload to Dropbox if we have a token
-    if (DROPBOX_TOKEN) {
+    if (config.DROPBOX_TOKEN) {
       // ... Dropbox upload code ...
     } else {
       console.log('\n⚠️ Skipping Dropbox upload (no token provided)');
@@ -220,18 +207,33 @@ async function main() {
       console.log(csvContent);
     }
   } catch (err) {
+    // Log the full error for debugging
     console.error('\n❌ Error running daily report:');
     console.error('Error message:', err.message);
+    if (err.stack) {
+      console.error('Stack trace:', err.stack);
+    }
     console.error('Please check:');
     console.error('1. The application is running on Railway');
-    console.error('2. The APP_URL is correct:', process.env.APP_URL);
+    console.error('2. The APP_URL is correct:', config.BASE_URL);
     console.error('3. The application can be accessed from GitHub Actions');
     process.exit(1);
   }
 }
 
-// Run the main function
-main().catch(err => {
-  console.error('\n❌ Fatal error:', err);
+// Ensure unhandled rejections are logged
+process.on('unhandledRejection', (err) => {
+  console.error('\n❌ Unhandled Promise Rejection:');
+  console.error(err);
   process.exit(1);
 });
+
+// Run the main function with proper error handling
+(async () => {
+  try {
+    await main();
+  } catch (err) {
+    console.error('\n❌ Fatal error:', err);
+    process.exit(1);
+  }
+})();
