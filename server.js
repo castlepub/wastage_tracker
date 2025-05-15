@@ -5,9 +5,6 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 
-console.log('\n=== Server Initialization ===');
-console.log('Starting server initialization...');
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -15,26 +12,18 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Validate database URL
-console.log('\nChecking DATABASE_URL...');
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL environment variable is required');
   process.exit(1);
 }
-console.log('DATABASE_URL is set');
 
 // Connect to Postgres with connection timeout
-console.log('\nInitializing database connection pool...');
 const db = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 5000,
-  // Add some additional pool settings
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  allowExitOnIdle: true // Allow the pool to exit when all clients are idle
+  connectionTimeoutMillis: 5000
 });
 
 // Test database connection
-console.log('\nTesting database connection...');
 (async () => {
   try {
     const client = await db.connect();
@@ -47,7 +36,6 @@ console.log('\nTesting database connection...');
 })();
 
 // Ensure tables exist on startup
-console.log('\nChecking database tables...');
 (async () => {
   try {
     await db.query(`
@@ -149,13 +137,10 @@ app.get('/api/entries', async (req, res) => {
     console.log('\n=== Entries Request Debug ===');
     console.log('Start date:', start);
     console.log('End date:', end);
-    console.log('Parsed start:', new Date(start).toISOString());
-    console.log('Parsed end:', new Date(end).toISOString());
 
     let query = `
       SELECT 
         w.*,
-        w.timestamp AT TIME ZONE 'UTC' as utc_timestamp,
         ic.unit_cost,
         (w.quantity * ic.unit_cost) as total_cost
       FROM wastage_entries w
@@ -166,15 +151,6 @@ app.get('/api/entries', async (req, res) => {
     `;
     
     const { rows } = await db.query(query, [start, end]);
-    console.log('\nFiltered entries:', rows.length);
-    console.log('\nExample entries:');
-    if (rows.length > 0) {
-      rows.slice(0, 3).forEach(row => {
-        console.log(`Entry: ${row.item_name} at ${row.utc_timestamp} (${row.timestamp})`);
-      });
-    }
-    console.log('===========================\n');
-    
     res.json({ entries: rows });
   } catch (err) {
     console.error('Error fetching entries:', err);
@@ -187,61 +163,25 @@ app.get('/', (_req, res) => res.send('OK'));
 
 // Start server
 const port = process.env.PORT || 3000;
-console.log(`\nStarting server on port ${port}...`);
-const server = app.listen(port, () => {
-  console.log(`✅ Server is listening on port ${port}`);
-  console.log('=== Initialization Complete ===\n');
-});
+const server = app.listen(port, () => console.log(`Listening on port ${port}`));
 
-// Graceful shutdown handler
-function shutdownGracefully(signal) {
-  console.log(`\n${signal} received. Shutting down gracefully...`);
-  
-  // Set a timeout to force exit after 10 seconds
-  const forceExit = setTimeout(() => {
-    console.error('Could not close connections in time, forcefully shutting down');
-    process.exit(1);
-  }, 10000);
-  
-  // Clear the timeout if we close successfully
-  forceExit.unref();
-  
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Shutting down...');
   server.close(async () => {
     console.log('HTTP server closed');
-    try {
-      await Promise.race([
-        db.end(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database shutdown timeout')), 5000)
-        )
-      ]);
-      console.log('Database connections closed');
-      clearTimeout(forceExit);
-      process.exit(0);
-    } catch (err) {
-      console.error('Error during shutdown:', err.message);
-      process.exit(1);
-    }
+    await db.end();
+    console.log('Database connections closed');
+    process.exit(0);
   });
-
-  // Stop accepting new connections immediately
-  server.unref();
-}
-
-// Handle different termination signals
-process.on('SIGTERM', () => shutdownGracefully('SIGTERM'));
-process.on('SIGINT', () => shutdownGracefully('SIGINT'));
-
-// Also handle "kill" commands
-process.on('SIGHUP', () => shutdownGracefully('SIGHUP'));
-
-// Handle uncaught exceptions and unhandled rejections
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  shutdownGracefully('UNCAUGHT_EXCEPTION');
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  shutdownGracefully('UNHANDLED_REJECTION');
+process.on('SIGINT', () => {
+  console.log('Shutting down...');
+  server.close(async () => {
+    console.log('HTTP server closed');
+    await db.end();
+    console.log('Database connections closed');
+    process.exit(0);
+  });
 });
