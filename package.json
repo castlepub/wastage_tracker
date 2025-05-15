@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "seed:costs": "node scripts/seedCosts.js",
-    "prestart": "echo 'Starting application...' && node scripts/seedCosts.js",
-    "start": "echo 'Seeding complete, starting server...' && node server.js"
+    "start": "node scripts/seedCosts.js && node server.js"
   },
   "dependencies": {
     "express":    "^4.18.2",
