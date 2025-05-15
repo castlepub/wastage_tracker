@@ -158,16 +158,22 @@ if (!DROPBOX_TOKEN) {
       method: 'GET'
     });
 
-    const entries = data.entries || data;
-    if (!Array.isArray(entries)) {
-      throw new Error(`API did not return a list. Response: ${JSON.stringify(data)}`);
+    if (!data || !data.entries) {
+      throw new Error('API response missing entries array');
     }
+
+    const entries = data.entries;
+    console.log(`Found ${entries.length} entries in API response`);
     
-    console.log(`Found ${entries.length} entries for this period`);
-    
-    // Filter entries to ensure they're in the correct time window
+    // Strict filtering of entries to ensure they're in the correct time window
     const validEntries = entries.filter(e => {
-        const entryTime = dayjs(e.utc_timestamp || e.timestamp).utc();
+        // Ensure we have a timestamp
+        if (!e.timestamp) {
+            console.log(`Skipping entry with no timestamp: ${JSON.stringify(e)}`);
+            return false;
+        }
+
+        const entryTime = dayjs(e.timestamp).utc();
         const isValid = entryTime.isAfter(startDate) && entryTime.isBefore(endDate);
         
         if (!isValid) {
@@ -179,12 +185,16 @@ if (!DROPBOX_TOKEN) {
     });
 
     console.log(`\nValid entries in time window: ${validEntries.length}`);
+    if (validEntries.length === 0) {
+        console.log('No valid entries found in the specified time window');
+        process.exit(0);
+    }
+
     validEntries.forEach(e => {
-        const entryTime = dayjs(e.utc_timestamp || e.timestamp).utc();
+        const entryTime = dayjs(e.timestamp).utc();
         console.log(`Entry: ${e.employee_name} - ${e.item_name} - ${e.quantity}${e.unit}`);
         console.log(`  Time: ${entryTime.format('YYYY-MM-DD HH:mm:ss')} UTC`);
         console.log(`  Raw timestamp: ${e.timestamp}`);
-        console.log(`  UTC timestamp: ${e.utc_timestamp || 'N/A'}`);
     });
 
     // Format CSV
@@ -195,7 +205,7 @@ if (!DROPBOX_TOKEN) {
       e.quantity,
       e.unit,
       e.reason || '',
-      dayjs(e.utc_timestamp || e.timestamp).utc().format('DD.MM.YYYY HH:mm:ss'),
+      dayjs(e.timestamp).utc().format('DD.MM.YYYY HH:mm:ss'),
       e.total_cost?.toFixed(2) || '0.00'
     ]);
 
