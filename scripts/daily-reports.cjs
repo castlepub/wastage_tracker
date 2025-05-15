@@ -24,13 +24,19 @@ async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       console.log(`Attempt ${i + 1}/${maxRetries} to fetch data...`);
+      console.log('Request URL:', url);
+      
       const res = await fetch(url);
+      console.log('Response status:', res.status);
+      console.log('Response headers:', JSON.stringify(Object.fromEntries([...res.headers]), null, 2));
       
       if (res.ok) {
         return res;
       }
 
       const errorText = await res.text();
+      console.log('Error response body:', errorText);
+      
       lastError = new Error(`API request failed with status ${res.status}: ${errorText}`);
       
       // If it's a 502, wait and retry
@@ -46,6 +52,10 @@ async function fetchWithRetries(url, maxRetries = 3, initialDelay = 5000) {
     } catch (err) {
       lastError = err;
       console.log(`Request failed: ${err.message}`);
+      if (err.cause) {
+        console.log('Error cause:', err.cause);
+      }
+      
       if (i < maxRetries - 1) {
         console.log(`Waiting ${delay/1000} seconds before retry...`);
         await sleep(delay);
@@ -80,7 +90,12 @@ if (now.isBefore(today6AM)) {
 const reportDate = startDate.format('YYYY-MM-DD');
 
 // Ensure we're using exact ISO 8601 UTC timestamps in the API URL
-const API_URL = `https://wastagetracker-production.up.railway.app/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+const BASE_URL = process.env.API_URL || 'https://wastagetracker-production.up.railway.app';
+const API_URL = `${BASE_URL}/api/entries?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+
+// Health check URL
+const HEALTH_CHECK_URL = BASE_URL;
+
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 
 (async () => {
@@ -97,15 +112,29 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     console.log('===========================\n');
     
     // First check if the server is up by hitting the health endpoint
-    console.log('Checking server health...');
+    console.log('\n=== Health Check ===');
+    console.log('Health check URL:', HEALTH_CHECK_URL);
     try {
-      const healthCheck = await fetch('https://wastagetracker-production.up.railway.app/');
+      const healthCheck = await fetch(HEALTH_CHECK_URL);
+      console.log('Health check status:', healthCheck.status);
+      console.log('Health check headers:', JSON.stringify(Object.fromEntries([...healthCheck.headers]), null, 2));
+      
       if (!healthCheck.ok) {
+        const errorText = await healthCheck.text();
+        console.log('Health check error response:', errorText);
         throw new Error(`Health check failed with status ${healthCheck.status}`);
       }
       console.log('Server is healthy');
+      
+      // Also try to fetch /api to check API availability
+      console.log('\nChecking API endpoint...');
+      const apiCheck = await fetch(`${BASE_URL}/api`);
+      console.log('API check status:', apiCheck.status);
     } catch (err) {
       console.log('Health check failed:', err.message);
+      if (err.cause) {
+        console.log('Error cause:', err.cause);
+      }
       console.log('Will try API endpoint anyway...');
     }
 
