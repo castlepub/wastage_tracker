@@ -202,11 +202,14 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     const filename = `wastage-${reportDate}.csv`;
     
     // 3. Initialize Dropbox with more detailed error handling
+    console.log('\n=== Dropbox Authentication ===');
     console.log('Initializing Dropbox client...');
     if (!DROPBOX_TOKEN) {
       throw new Error('DROPBOX_TOKEN environment variable is not set');
     }
-    console.log('Token exists:', DROPBOX_TOKEN.substring(0, 5) + '...');
+    console.log('Token length:', DROPBOX_TOKEN.length);
+    console.log('Token prefix:', DROPBOX_TOKEN.substring(0, 5));
+    console.log('Token suffix:', DROPBOX_TOKEN.substring(DROPBOX_TOKEN.length - 5));
 
     const dbx = new Dropbox({ 
       accessToken: DROPBOX_TOKEN,
@@ -214,15 +217,21 @@ const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
     });
 
     // 4. Check account access
-    console.log('Verifying Dropbox access...');
+    console.log('\nVerifying Dropbox access...');
     try {
       const account = await dbx.usersGetCurrentAccount();
       console.log('Connected to Dropbox as:', account.result.email);
     } catch (accountErr) {
       console.error('Failed to verify Dropbox account:', accountErr.message);
       if (accountErr.response) {
-        const errorText = await accountErr.response.text();
-        console.error('Account verification error details:', errorText);
+        try {
+          const errorText = await accountErr.response.text();
+          console.error('Account verification error details:', errorText);
+          console.error('Error response status:', accountErr.response.status);
+          console.error('Error response headers:', JSON.stringify(Object.fromEntries([...accountErr.response.headers]), null, 2));
+        } catch (e) {
+          console.error('Could not parse error response:', e.message);
+        }
       }
       throw new Error('Could not verify Dropbox access');
     }
