@@ -1,10 +1,57 @@
 // daily-report.js
-const fetch = require('node-fetch');
-const fs = require('fs');
-const { Dropbox } = require('dropbox');
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
+
+// Immediate logging to debug script startup
+console.log('=== Script Starting ===');
+console.log('Node version:', process.version);
+console.log('Current working directory:', process.cwd());
+console.log('Environment variables:', {
+  NODE_ENV: process.env.NODE_ENV,
+  APP_URL: process.env.APP_URL,
+  DROPBOX_TOKEN: process.env.DROPBOX_TOKEN ? '(set)' : '(not set)'
+});
+
+// Add error logging as early as possible
+process.on('uncaughtException', (err) => {
+  console.error('\n❌ Uncaught Exception:');
+  console.error('Error message:', err.message);
+  console.error('Stack trace:', err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('\n❌ Unhandled Promise Rejection:');
+  console.error('Error message:', err?.message);
+  console.error('Stack trace:', err?.stack);
+  process.exit(1);
+});
+
+// Try importing dependencies with error handling
+let fetch, fs, Dropbox, dayjs, utc, timezone;
+
+try {
+  console.log('\n=== Loading Dependencies ===');
+  
+  console.log('Loading node-fetch...');
+  fetch = require('node-fetch');
+  
+  console.log('Loading fs...');
+  fs = require('fs');
+  
+  console.log('Loading dropbox...');
+  Dropbox = require('dropbox').Dropbox;
+  
+  console.log('Loading dayjs and plugins...');
+  dayjs = require('dayjs');
+  utc = require('dayjs/plugin/utc');
+  timezone = require('dayjs/plugin/timezone');
+  
+  console.log('All dependencies loaded successfully');
+} catch (err) {
+  console.error('\n❌ Failed to load dependencies:');
+  console.error('Error message:', err.message);
+  console.error('Stack trace:', err.stack);
+  process.exit(1);
+}
 
 // Add UTC and timezone plugins
 dayjs.extend(utc);
@@ -41,9 +88,38 @@ console.log('\nFetching entries for the period:');
 console.log('From:', config.startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
 console.log('To:  ', config.endDate.format('YYYY-MM-DD HH:mm'), 'UTC\n');
 
+// Basic connectivity test
+async function testConnectivity() {
+  try {
+    const dns = require('dns');
+    const url = new URL(config.BASE_URL);
+    
+    console.log('\n=== Testing Connectivity ===');
+    console.log('Testing DNS resolution for:', url.hostname);
+    
+    const addresses = await new Promise((resolve, reject) => {
+      dns.resolve(url.hostname, (err, addresses) => {
+        if (err) reject(err);
+        else resolve(addresses);
+      });
+    });
+    
+    console.log('DNS resolution successful:', addresses);
+    return true;
+  } catch (err) {
+    console.error('DNS resolution failed:', err.message);
+    return false;
+  }
+}
+
 // Main async function
 async function main() {
   try {
+    // Test connectivity first
+    if (!await testConnectivity()) {
+      throw new Error('Failed to resolve application hostname. Please check network connectivity and DNS.');
+    }
+
     // Pre-warm the application with multiple attempts
     console.log('\n=== Pre-warming Application ===');
     console.log('Sending initial requests to wake up the application...');
@@ -220,13 +296,6 @@ async function main() {
     process.exit(1);
   }
 }
-
-// Ensure unhandled rejections are logged
-process.on('unhandledRejection', (err) => {
-  console.error('\n❌ Unhandled Promise Rejection:');
-  console.error(err);
-  process.exit(1);
-});
 
 // Run the main function with proper error handling
 (async () => {
