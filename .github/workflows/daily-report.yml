@@ -23,10 +23,14 @@ jobs:
       run: npm install
 
     - name: Check application health
+      env:
+        APP_URL: ${{ secrets.APP_URL }}
       run: |
-        echo "Checking application health..."
+        # Use APP_URL from secrets or default to production URL
+        URL="${APP_URL:-https://wastagetracker-production.up.railway.app}"
+        echo "Checking application health at: $URL"
         for i in {1..5}; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://wastagetracker-production.up.railway.app)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           if [ $HTTP_CODE -eq 200 ]; then
             echo "✅ Application is healthy (HTTP $HTTP_CODE)"
             break
@@ -44,6 +48,7 @@ jobs:
     - name: Run daily-reports.cjs
       env:
         DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+        APP_URL: ${{ secrets.APP_URL }}
         NODE_DEBUG: http,https  # Enable HTTP debugging
       run: |
         # First try without debug
