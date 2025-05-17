@@ -4,13 +4,153 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 const seedCosts = require('./scripts/seedCosts');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static front-end
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (req.session.isAuthenticated) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+};
+
+// Login page route
+app.get('/login', (req, res) => {
+  if (req.session.isAuthenticated) {
+    return res.redirect('/entries');
+  }
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Login - The Castle Berlin</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          margin: 0;
+          padding: 20px;
+          background: #f5f5f5;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        .login-container {
+          background: white;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 100%;
+          max-width: 400px;
+        }
+        h1 {
+          color: #2c3e50;
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .form-group {
+          margin-bottom: 20px;
+        }
+        label {
+          display: block;
+          margin-bottom: 5px;
+          color: #666;
+        }
+        input {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-sizing: border-box;
+        }
+        button {
+          width: 100%;
+          padding: 10px;
+          background: #2c3e50;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        button:hover {
+          background: #34495e;
+        }
+        .error {
+          color: #e74c3c;
+          text-align: center;
+          margin-bottom: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="login-container">
+        <h1>The Castle Berlin</h1>
+        ${req.query.error ? '<p class="error">Invalid username or password</p>' : ''}
+        <form method="POST" action="/login">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </body>
+    </html>
+  `;
+  res.send(html);
+});
+
+// Login POST handler
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  
+  // Get credentials from environment variables
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'castle123';
+  
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.isAuthenticated = true;
+    res.redirect('/entries');
+  } else {
+    res.redirect('/login?error=1');
+  }
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/login');
+});
 
 // Validate database URL
 if (!process.env.DATABASE_URL) {
@@ -162,8 +302,8 @@ app.get('/api/entries', async (req, res) => {
   }
 });
 
-// New route for HTML table view
-app.get('/entries', async (req, res) => {
+// Protect the entries route
+app.get('/entries', requireAuth, async (req, res) => {
   try {
     const { start, end } = req.query;
     
@@ -203,10 +343,25 @@ app.get('/entries', async (req, res) => {
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+          }
           h1 {
             color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
+            margin: 0;
+          }
+          .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+          }
+          .logout-btn:hover {
+            background: #c0392b;
           }
           table {
             width: 100%;
@@ -241,7 +396,10 @@ app.get('/entries', async (req, res) => {
       </head>
       <body>
         <div class="container">
-          <h1>The Castle Berlin - Wastage Entries</h1>
+          <div class="header">
+            <h1>The Castle Berlin - Wastage Entries</h1>
+            <a href="/logout" class="logout-btn">Logout</a>
+          </div>
           <table>
             <thead>
               <tr>
