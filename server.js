@@ -162,6 +162,124 @@ app.get('/api/entries', async (req, res) => {
   }
 });
 
+// New route for HTML table view
+app.get('/entries', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    
+    let query = `
+      SELECT 
+        w.*,
+        ic.unit_cost,
+        (w.quantity * ic.unit_cost) as total_cost
+      FROM wastage_entries w
+      LEFT JOIN item_costs ic ON w.item_name = ic.item_name
+      ORDER BY w.timestamp DESC
+    `;
+
+    const { rows } = await db.query(query);
+
+    // HTML template with modern styling
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>The Castle Berlin - Wastage Entries</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+          }
+          th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+          }
+          td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+          }
+          tr:nth-child(even) {
+            background: #f9f9f9;
+          }
+          .timestamp {
+            white-space: nowrap;
+          }
+          .cost {
+            text-align: right;
+          }
+          .reason {
+            color: #666;
+            font-style: italic;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>The Castle Berlin - Wastage Entries</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Employee</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Reason</th>
+                <th>Cost (€)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(entry => `
+                <tr>
+                  <td class="timestamp">${new Date(entry.timestamp).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</td>
+                  <td>${entry.employee_name}</td>
+                  <td>${entry.item_name}</td>
+                  <td>${entry.quantity}</td>
+                  <td>${entry.unit}</td>
+                  <td class="reason">${entry.reason || '-'}</td>
+                  <td class="cost">${entry.total_cost ? entry.total_cost.toFixed(2) : '0.00'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+
+    res.send(html);
+  } catch (err) {
+    console.error('Error fetching entries:', err);
+    res.status(500).send('Failed to fetch entries');
+  }
+});
+
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
