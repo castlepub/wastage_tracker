@@ -215,25 +215,25 @@ async function generateReport() {
             </tbody>
           </table>
 
-          <h3>Wastage Reasons</h3>
+          <h3>Detailed Wastage Report</h3>
           <table>
             <thead>
               <tr>
+                <th>Time</th>
+                <th>Employee</th>
                 <th>Item</th>
                 <th>Quantity</th>
                 <th>Reason</th>
-                <th>Employee</th>
-                <th>Time</th>
               </tr>
             </thead>
             <tbody>
-              ${validEntries.map(entry => `
+              ${validEntries.sort((a, b) => dayjs(a.timestamp).unix() - dayjs(b.timestamp).unix()).map(e => `
                 <tr>
-                  <td>${entry.item_name}</td>
-                  <td>${entry.quantity} ${entry.unit}</td>
-                  <td>${entry.reason || 'Not specified'}</td>
-                  <td>${entry.employee_name}</td>
-                  <td>${dayjs(entry.timestamp).utc().format('HH:mm')}</td>
+                  <td>${dayjs(e.timestamp).utc().format('HH:mm')}</td>
+                  <td>${e.employee_name}</td>
+                  <td>${e.item_name}</td>
+                  <td>${e.quantity} ${e.unit}</td>
+                  <td>${e.reason || 'Not specified'}</td>
                 </tr>
               `).join('')}
             </tbody>
