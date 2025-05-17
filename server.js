@@ -18,10 +18,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
-  resave: false,
+  resave: true,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to true only if you're using HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -29,6 +29,11 @@ app.use(session({
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
+  console.log('Auth check:', {
+    sessionExists: !!req.session,
+    isAuthenticated: req.session.isAuthenticated
+  });
+  
   if (req.session.isAuthenticated) {
     next();
   } else {
@@ -138,10 +143,30 @@ app.post('/login', async (req, res) => {
   const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'castle123';
   
+  console.log('Login attempt:', {
+    providedUsername: username,
+    expectedUsername: ADMIN_USERNAME,
+    usernameMatch: username === ADMIN_USERNAME,
+    passwordMatch: password === ADMIN_PASSWORD,
+    envVarsPresent: {
+      ADMIN_USERNAME: !!process.env.ADMIN_USERNAME,
+      ADMIN_PASSWORD: !!process.env.ADMIN_PASSWORD
+    }
+  });
+  
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    console.log('Login successful, setting session');
     req.session.isAuthenticated = true;
-    res.redirect('/entries');
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.redirect('/login?error=1');
+      }
+      console.log('Session saved, redirecting to entries');
+      res.redirect('/entries');
+    });
   } else {
+    console.log('Login failed, redirecting to login with error');
     res.redirect('/login?error=1');
   }
 });
