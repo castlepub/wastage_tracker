@@ -13,6 +13,8 @@
     "dropbox":    "^10.34.0",
     "node-fetch": "^2.6.7",
     "dayjs":      "^1.11.10",
-    "@sendgrid/mail": "^7.7.0"
+    "@sendgrid/mail": "^7.7.0",
+    "express-session": "^1.17.3",
+    "bcryptjs": "^2.4.3"
   }
 }
