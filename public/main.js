@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const quantityInput = document.getElementById('quantity');
 
   // Employee data (no Justina)
-  const employees = ["Guy", "Dean", "Henry", "Bethany", "Pero", "Paddy", "Vaile", "Nora", "Melissa"];
+  const employees = ["Guy", "Dean", "Henry", "Bethany", "Pero", "Paddy", "Vaile", "Nora", "Melissa", "Josh"];
 
   // Show message with type (success/error/info)
   function showMessage(text, type = 'info') {
