@@ -4,17 +4,6 @@ const path = require('path');
 const csv = require('csv-parser');
 
 async function seedCosts(pool) {
-  // Check if we need to seed by comparing row count
-  try {
-    const { rows: [{ count }] } = await pool.query('SELECT COUNT(*) FROM item_costs');
-    if (count > 0) {
-      console.log('✅ Item costs table already populated, skipping seed');
-      return;
-    }
-  } catch (err) {
-    // Table doesn't exist, we'll create it
-  }
-
   return new Promise((resolve, reject) => {
     const rows = [];
     const csvPath = path.join(process.cwd(), 'data', 'stockLevels.csv');
@@ -49,16 +38,32 @@ async function seedCosts(pool) {
           const inferUnit = r => {
             const n = (r[nameKey] || '').toLowerCase();
             const g = (r['Accounting group'] || '').trim();
+            
+            // Check name for explicit units
             if (/\d+\s?kg/.test(n) || /\d+\s?g\b/.test(n)) return 'g';
             if (/\d+\s?l\b/.test(n) || /\d+\s?ml\b/.test(n)) return 'ml';
+            
+            // Handle beverages
             const bev = ['Spirit Bottles','Alkohol','Long Drinks','Mixers','Kegs','Ciders',
                          'Tap Craft Beer 0,3L','Tap Craft Beer 0,5L','Wein','GIN','Cocktails',
                          'Whiskey','Soft Drinks','Coffee'];
             if (bev.includes(g)) return 'ml';
+            
+            // Handle food items - default to grams unless they are clearly countable
+            if (g === 'Food') {
+              // List of food items that are typically counted in pieces
+              const countableFood = ['pizza', 'focaccia', 'buzzernummer'];
+              const isCountable = countableFood.some(item => n.includes(item.toLowerCase()));
+              return isCountable ? 'pcs' : 'g';
+            }
+            
             return 'pcs';
           };
 
-          // 4) Prepare batch insert data
+          // 4) Clear existing items and prepare new data
+          await pool.query('DELETE FROM item_costs');
+          console.log('Cleared existing items');
+
           const values = [];
           const params = [];
           let paramCount = 1;
@@ -82,19 +87,16 @@ async function seedCosts(pool) {
           }
 
           if (values.length > 0) {
-            // 5) Perform batch insert
+            // 5) Insert new items
             const query = `
               INSERT INTO item_costs(item_name, unit_cost, unit)
-              VALUES ${values.join(',')}
-              ON CONFLICT(item_name) DO UPDATE
-                SET unit_cost = EXCLUDED.unit_cost,
-                    unit = EXCLUDED.unit;
+              VALUES ${values.join(',')};
             `;
 
             await pool.query(query, params);
           }
 
-          console.log(`✅ ${values.length} items seeded`);
+          console.log(`✅ ${values.length} items updated`);
           resolve();
         } catch (err) {
           console.error('Seeding error:', err);
