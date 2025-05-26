@@ -1,0 +1,486 @@
+SKU;Name;Parent SKU;Min - Max;Type;Default price;Extra price;Accounting group;Button name;Cost price;Package content (stock management);Package unit (stock management);Weight;Tare (grams, selling by weight);Sharing status;Statistics group
+OI1;Divers;;;item;;;Divers;Divers;0.0000;;;;;SHARED;
+MSG1;Warten;;;item;0.0;;Divers;Warten;0.0000;;;;;SHARED;
+MSG2;VIP Gast;;;item;0.0;;Divers;VIP Gast;0.0000;;;;;SHARED;
+8;Americano;;;combo;3.0;;Coffee;Americano;0.4300;;;;;LOCAL;default/
+9;Irish coffee;;;combo;6.0;;Coffee;Irish coffee;;;;;;LOCAL;default/
+10;Hot Toddy 4cl Jameson;;;item;6.5;;Coffee;Hot Toddy 4cl Jameson;0.9760;;;;;LOCAL;default/
+11;Double Espresso;;;item;2.5;;Coffee;Double Espresso;0.3000;;;;;LOCAL;default/
+12;Espresso Macchiato;;;combo;3.5;;Coffee;Espresso Macchiato;0.4000;;;;;LOCAL;default/
+13;Cappuccino;;;combo;3.5;;Coffee;Cappuccino;0.4000;;;;;LOCAL;default/
+14;Latte Macchiato;;;combo;4.0;;Coffee;Latte Macchiato;0.5000;;;;;LOCAL;default/
+15;Tea;;;item;3.0;;Coffee;Tea;0.2000;;;;;LOCAL;default/
+16;Hot Chocolate;;;combo;3.5;;Coffee;Hot Chocolate;0.4000;;;;;LOCAL;default/
+17;Mint Hot Chocolate;;;combo;4.0;;Coffee;Mint Hot Chocolate;0.6000;;;;;LOCAL;default/
+18;Chai Latte;;;combo;4.0;;Coffee;Chai Latte;0.2314;;;;;LOCAL;default/
+19;Cortado;;;combo;3.0;;Coffee;Cortado;0.4000;;;;;LOCAL;default/
+20;pumpkin spice Latte;;;combo;4.5;;Coffee;pumpkin Spice Latte;0.6000;;;;;LOCAL;default/
+21;Dirty Chai;;;combo;4.5;;Coffee;Dirty Chai;0.2314;;;;;LOCAL;default/
+22;Caramel Macciato;;;combo;4.5;;Coffee;Caramel Macciato;0.6000;;;;;LOCAL;default/
+23;Haselnuss Macciato;;;combo;4.5;;Coffee;Haselnuss Macciato;0.1784;;;;;LOCAL;default/
+24;Mint Macchiato;;;combo;4.5;;Coffee;Mint Macchiato;0.6000;;;;;LOCAL;default/
+25;Baby-Chino;;;combo;1.5;;Coffee;Baby-Chino;0.1000;;;;;LOCAL;default/
+27;Cow Milk;;;item;0.0;;Coffee;Cow Milk;0.3390;;;;;LOCAL;default/
+28;Ice;;;item;0.5;;Coffee;Ice;;;;;;LOCAL;default/
+29;Extra Shot;;;item;2.0;;Coffee;Extra Shot;;;;;;LOCAL;default/
+30;Pils 0,3L;;;item;3.0;;Tap Beers;Pils 0,3L;0.2735;0.30000;VOLUME;;;LOCAL;default/
+31;Radler 0,3L;;;item;3.5;;Tap Beers;Radler 0,3L;0.3227;;;;;LOCAL;default/
+32;Guinness 0,3L;;;item;5.5;;Tap Beers;Guinness 0,3L;0.9847;;;;;LOCAL;default/
+33;Stowford Cider 0,3L;;;item;5.5;;Tap Beers;Stowford Cider 0,3L;0.9996;;;;;LOCAL;default/
+34;Guinness 0,5L;;;item;7.0;;Tap Beers;Guinness 0,5L;1.6412;;;;;LOCAL;default/
+35;Radler 0,5L;;;item;5.0;;Tap Beers;Radler 0,5L;0.5379;;;;;LOCAL;default/
+36;Pils 0,5L;;;item;4.5;;Tap Beers;Pils 0,5L;0.4558;0.50000;VOLUME;;;LOCAL;default/
+37;Stowford Cider 0,5L;;;item;7.0;;Tap Beers;Stowford Cider 0,5L;1.6660;;;;;LOCAL;default/
+38;Weihnstephan Hefe 0,5L;;;item;5.0;;Tap Beers;Weihnstephan Hefe 0,5L;1.0217;;;;;LOCAL;default/
+46;Tap 8 0,3 Hopscor IPA;;;item;5.0;;Tap Craft Beer 0,3L;Tap 8 0,3 Hopscor IPA;0.9282;;;;;LOCAL;default/
+47;Tap 4 0,3l Ritterguts - Gose;;;item;6.3;;Tap Craft Beer 0,3L;Tap 4 0,3l Ritterguts - Gose;1.1700;;;;;LOCAL;default/
+48;Tap 5 0,3l FW - Here comes the sun 200425;;;item;8.0;;Tap Craft Beer 0,3L;Tap 5 0,3l FW - Here comes the sun;1.3700;;;;;LOCAL;default/
+52;Tap 20 0,3 Hopscor Pale Ale;;;item;4.0;;Tap Craft Beer 0,3L;Tap 20 0,3 Hopscor Pale Ale;0.8925;;;;;LOCAL;default/
+60;Tap 8 0,5 Hopscor IPA;;;item;6.5;;Tap Craft Beer 0,5L;Tap 8 0,5 Hopscor IPA;1.5470;;;;;LOCAL;default/
+61;Tap 4 0,5l Ritterguts - Gose;;;item;7.8;;Tap Craft Beer 0,5L;Tap 4 0,5l Ritterguts - Gose;1.9500;;;;;LOCAL;default/
+62;Tap 5 0,5l FW - Here comes the sun 200425;;;item;9.5;;Tap Craft Beer 0,5L;Tap 5 0,5l FW - Here comes the sun;2.2900;;;;;LOCAL;default/
+66;Tap 20 0,5 Hopscor Pale ale;;;item;5.5;;Tap Craft Beer 0,5L;Tap 20 0,5 Hopscor Pale ale;1.4875;;;;;LOCAL;default/
+68;Neulich 0,33l;;;item;4.5;;Alkohol;Neulich 0,33l;1.0900;0.33000;VOLUME;;;LOCAL;default/
+71;Corona 0,33l;;;item;4.5;;Alkohol;Corona 0,33l;1.0800;0.33000;VOLUME;;;LOCAL;default/
+75;BRLO - Naked 0,33L;;;item;4.5;;Alkohol;BRLO NAKED - 0,33l;1.4100;0.33000;VOLUME;;;LOCAL;default/
+76;Brlo - Porter 0,33l;;;item;5.5;;Alkohol;Brlo Porter 0,33l;1.5300;0.33000;VOLUME;;;LOCAL;default/
+77;Berliner Berg - lager- 0,33l;;;item;4.5;;Alkohol;Berliner Berg - Lager 0,33l;1.2400;0.33000;VOLUME;;;LOCAL;default/
+78;Gösser Alkoholfrei;;;item;4.5;;Alkohol;Gösser Alkoholfrei;0.9000;0.33000;VOLUME;;;LOCAL;default/
+80;Weihenstephaner- Kristall - 0.5l;;;item;4.5;;Alkohol;Weihnstephaner - Kristall - 0.5l;0.9300;0.50000;VOLUME;;;LOCAL;default/
+81;Leffe 0,33l;;;item;4.5;;Alkohol;Leffe 0,33l;1.0400;0.33000;VOLUME;;;LOCAL;default/
+83;Pilsner urquell 0,33l;;;item;3.0;;Alkohol;Pilsner urquell 0,33l;0.7500;0.33000;VOLUME;;;LOCAL;default/
+86;Beefeater;;;combo;4.0;;GIN;beefeater;0.8504;;;;;LOCAL;default/
+88;Botanist;;;combo;7.0;;GIN;Botanist;1.5903;;;;;LOCAL;default/
+89;Bulldog;;;combo;4.5;;GIN;Bulldog;1.1469;;;;;LOCAL;default/
+90;Citadelle;;;combo;4.5;;GIN;Citadelle;1.3646;4.00000;VOLUME;;;LOCAL;default/
+93;Grace;;;combo;4.5;;GIN;Grace;1.3800;;;;;LOCAL;default/
+94;Hayman's Sloe;;;combo;8.5;;GIN;Haymans SLoe;1.3771;;;;;LOCAL;default/
+95;Hendrick's;;;combo;7.0;;GIN;Hendrick´s;1.5697;;;;;LOCAL;default/
+96;Illusionist;;;combo;9.5;;GIN;Illusionist;2.7000;;;;;LOCAL;default/
+97;Illusionist alkoholfrei;;;combo;5.5;;GIN;illusionist alkoholfrei;1.4300;;;;;LOCAL;default/
+98;Larios Rose;;;combo;4.0;;GIN;Larios Rose;0.8229;;;;;LOCAL;default/
+99;Mampe Gin;;;combo;4.5;;GIN;Mampe;0.6503;;;;;LOCAL;default/
+100;Mare;;;combo;8.0;;GIN;Mare;2.1400;;;;;LOCAL;default/
+101;Martin Millers;;;combo;6.5;;GIN;Martins;1.4700;;;;;LOCAL;default/
+102;Monkey 47;;;combo;9.5;;GIN;Monkey 47;2.6088;;;;;LOCAL;default/
+103;Roku;;;combo;7.0;;GIN;Roku;1.3840;;;;;LOCAL;default/
+104;Siegfried;;;combo;8.0;;GIN;Siegfried;2.0400;;;;;LOCAL;default/
+105;Siegfried Alkoholfrei;;;combo;9.5;;GIN;Siegfried Alkoholfrei;1.4464;;;;;LOCAL;default/
+106;Sipsmith;;;combo;7.0;;GIN;Sipsmith;1.5900;;;;;LOCAL;default/
+107;Sul;;;combo;9.0;;GIN;Sul;2.4000;;;;;LOCAL;default/
+108;Tanqueray;;;combo;4.0;;GIN;Tanqueray;0.9288;;;;;LOCAL;default/
+109;Tanqueray 0,0;;;combo;4.0;;GIN;Tanqueray 0,0;0.9434;;;;;LOCAL;default/
+110;Tanqueray No. Ten;;;combo;6.0;;GIN;Tanqueray No. Ten;1.4274;;;;;LOCAL;default/
+111;Misc gin;;;combo;0.0;;GIN;Misc gin;;;;;;LOCAL;default/
+112;Thomas Henry - Tonic Water 0,2l;;;item;3.0;;GIN;Thomas Henry - Tonic Water 0,2l;0.7500;0.20000;VOLUME;;;LOCAL;default/
+114;Thomas Henry - Dry 0,2l;;;item;3.0;;GIN;Thomas Henry - Dry 0,2l;0.7500;0.20000;VOLUME;;;LOCAL;default/
+115;Thomas Henry - Botanical 0,2l;;;item;3.0;;GIN;Thomas Henry - Botanical 0,2l;0.7500;0.20000;VOLUME;;;LOCAL;default/
+117;Shirley Temple;;;item;6.0;;Soft Drinks;Shirley Temple;0.1759;;;;;LOCAL;default/
+121;Coca-Cola 0,33l;;;item;3.0;;Soft Drinks;Coca-Cola 0,33l;0.7100;0.33000;VOLUME;;;LOCAL;default/
+122;Coca-Cola Zero 0,33l;;;item;3.0;;Soft Drinks;Coca-Cola Zero 0,33l;0.7100;0.33000;VOLUME;;;LOCAL;default/
+124;Ice tea Fuze 0,3l;;;item;3.5;;Soft Drinks;Ice tea Fuze 0,3l;0.8100;0.30000;VOLUME;;;LOCAL;default/
+126;Apfelsaft - Granini 0,2l;;;item;3.0;;Soft Drinks;Apfelsaft - Granini 0.2l;0.5500;0.20000;VOLUME;;;LOCAL;default/
+127;Orangensaft - Granini;;;item;3.0;;Soft Drinks;Orangensaft;0.9100;0.20000;VOLUME;;;LOCAL;default/
+128;Stilles Wasser Vio 0,25l;;;item;2.0;;Soft Drinks;Stilles wasser vio 0,25l;0.4000;0.25000;VOLUME;;;LOCAL;default/
+129;Sprudel Wasser Vio 0,25l;;;item;2.0;;Soft Drinks;Sprudel Wasser Vio 0,25l;0.4000;0.25000;VOLUME;;;LOCAL;default/
+130;Club Mate;;;item;3.0;;Soft Drinks;Club Mate;0.5400;0.33000;VOLUME;;;LOCAL;default/
+131;Fanta;;;item;3.0;;Soft Drinks;Fanta;0.7100;0.33000;VOLUME;;;LOCAL;default/
+132;Sprite;;;item;3.0;;Soft Drinks;Sprite;0.7100;0.33000;VOLUME;;;LOCAL;default/
+133;Ginger Ale 0,2l;;;item;3.0;;Soft Drinks;Ginger Ale 0,2l;0.3520;;;;;LOCAL;default/
+134;Large Sparkling Water 0,7l;;;item;5.0;;Soft Drinks;Large Sparkling Water;0.4100;;;;;LOCAL;default/
+138;Cointreau;;;item;3.0;;SHOTS;Cointreau;0.5300;;;;;LOCAL;default/
+139;Slippery Nipple;;;item;3.0;;SHOTS;Slippery Nipple;0.3533;;;;;LOCAL;default/
+140;Kahlua;;;item;2.5;;SHOTS;Kahlua;0.4483;;;;;LOCAL;default/
+142;Campari;;;item;2.5;;SHOTS;Campari;0.3824;;;;;LOCAL;default/
+143;Jack D Honey;;;item;2.5;;SHOTS;Jack D Honey;0.5643;;;;;LOCAL;default/
+144;Tequila;;;item;3.0;;SHOTS;Tequila;0.6563;;;;;LOCAL;default/
+145;Jack D Tennessee Fire;;;item;2.5;;SHOTS;Jack D Tennessee Fire;0.5386;;;;;LOCAL;default/
+147;Limoncello;;;item;3.0;;SHOTS;Limoncello;0.3410;;;;;LOCAL;default/
+148;Mexikaner;;;item;2.5;;SHOTS;Mexikaner;0.1199;;;;;LOCAL;default/
+149;Vodka;;;item;2.5;;SHOTS;Vodka;0.3174;;;;;LOCAL;default/
+150;Baileys;;;item;2.5;;SHOTS;Bailey´s;0.3532;;;;;LOCAL;default/
+151;Jägermeister;;;item;3.0;;SHOTS;Jägermeister;0.3742;;;;;LOCAL;default/
+152;Berliner Luft;;;item;2.5;;SHOTS;Berliner Luft;0.2014;;;;;LOCAL;default/
+153;Sambuca;;;item;2.5;;SHOTS;Sambuca;0.3534;;;;;LOCAL;default/
+154;Jameson - shot;;;item;3.0;;SHOTS;Jameson;0.4880;;;;;LOCAL;default/
+155;Disaronno - Amaretto;;;item;2.5;;SHOTS;Disaronno;0.3794;;;;;LOCAL;default/
+156;Cosmopolitan;;;item;10.0;;Cocktails;Cosmopolitan;1.6386;;;;;LOCAL;default/
+158;Espresso Martini;;;item;10.0;;Cocktails;Espresso Martini;1.6386;;;;;LOCAL;default/
+159;Tails Berry Mojito;;;item;10.0;;Cocktails;Tails Berry Mojito;2.3719;;;;;LOCAL;default/
+160;Paloma;;;item;10.0;;Cocktails;Paloma;2.3163;;;;;LOCAL;default/
+161;Thyme of my Life;;;item;10.0;;Cocktails;Thyme of my Life;1.6540;;;;;LOCAL;default/
+163;Negroni;;;item;11.0;;Cocktails;Negroni;1.8294;;;;;LOCAL;default/
+164;Off Menu Cocktails;;;item;11.0;;Cocktails;Off Menu Cocktails;;;;;;LOCAL;default/
+166;Pina Colada;;;item;10.0;;Cocktails;Pina Colada;1.1931;;;;;LOCAL;default/
+167;Slow gin Sour;;;item;11.0;;Cocktails;Slow gin Sour;1.6100;;;;;LOCAL;default/
+170;Liquor 43 Mixer;;;item;9.0;;Long Drinks;Liquor 43 Mixer;1.0000;;;;;LOCAL;default/
+172;Dark & Stormy;;;item;9.0;;Long Drinks;Dark & Stormy;1.1623;;;;;LOCAL;default/
+173;Tennessee Mule;;;item;9.0;;Long Drinks;Tennessee Mule;1.3411;;;;;LOCAL;default/
+174;Jack Apple Lemonade;;;item;9.0;;Long Drinks;Jack Apple;1.3251;;;;;LOCAL;default/
+175;Jack Rye and Dry;;;item;9.0;;Long Drinks;Jack Rye and Dry;1.7194;;;;;LOCAL;default/
+176;London Mule;;;item;9.0;;Long Drinks;London Mule;1.2808;;;;;LOCAL;default/
+177;Peach Vodka;;;item;9.0;;Long Drinks;Peach Vodka;0.8709;;;;;LOCAL;default/
+178;Tropical Vodka Lemonade;;;item;9.0;;Long Drinks;Tropical Vodka Lemonade;0.9144;;;;;LOCAL;default/
+179;Aperol Spritz;;;item;9.0;;Long Drinks;Aperol Spritz;1.0350;;;;;LOCAL;default/
+181;Berry Spritz;;;item;9.0;;Long Drinks;Berry Spritz;0.5960;;;;;LOCAL;default/
+182;Limoncello Spritz;;;item;9.0;;Long Drinks;Limoncello Spritz;1.0726;;;;;LOCAL;default/
+183;Lillet Spritz;;;item;9.0;;Long Drinks;Lillet Spritz;1.1516;;;;;LOCAL;default/
+184;Vodka Lemon;;;item;9.0;;Long Drinks;Vodka Lemon;0.8829;;;;;LOCAL;default/
+185;Whiskey and Coke;;;item;9.0;;Long Drinks;Whiskey and Coke;1.2240;;;;;LOCAL;default/
+186;Whiskey and Ginger Ale;;;item;9.0;;Long Drinks;Whiskey and Ginger Ale;1.3280;;;;;LOCAL;default/
+187;Campari Orange;;;item;9.0;;Long Drinks;Campari Orange;1.4308;;;;;LOCAL;default/
+188;Cuba Libre;;;item;9.0;;Long Drinks;Cuba Libre;1.1366;;;;;LOCAL;default/
+189;Tequila Sunrise;;;item;9.0;;Long Drinks;Tequila Sunrise;1.8121;;;;;LOCAL;default/
+190;Moscow Mule;;;item;9.0;;Long Drinks;Moscow Mule;0.8989;;;;;LOCAL;default/
+191;Vodka Soda;;;item;8.0;;Long Drinks;Vodka Soda;0.7520;;;;;LOCAL;default/
+192;Lady V (Vegan) Pizza;;;combo;11.5;;Pizza;Lady V (Vegan);2.1066;;;;;LOCAL;default/
+194;Funghi Pizza;;;combo;11.5;;Pizza;Funghi Pizza;1.8831;;;;;LOCAL;default/
+195;The Tower Spicy Pizza;;;combo;13.5;;Pizza;The Tower Spicy Pizza;2.2600;;;;;LOCAL;default/
+196;The Jester (Pepperoni) Pizza;;;combo;11.5;;Pizza;The Jester (Pepperoni);2.1123;;;;;LOCAL;default/
+197;Queen Margarita Pizza;;;combo;9.5;;Pizza;Queen Margarita Pizza;1.6146;;;;;LOCAL;default/
+198;Royal Salami Pizza;;;combo;11.5;;Pizza;Royal Salami Pizza;2.0482;;;;;LOCAL;default/
+199;Sir PlantsAlot Pizza;;;combo;11.5;;Pizza;Sir PlantsAlot Pizza;2.3034;;;;;LOCAL;default/
+200;Dark Knight Pizza;;;combo;11.5;;Pizza;Dark Knight Pizza;1.8191;;;;;LOCAL;default/
+202;Focaccia;;;combo;7.5;;Food;Focaccia;0.5886;;;;;LOCAL;default/
+209;Jameson Black 2cl;;;item;5.0;;Whiskey;Jameson Black 2cl;0.8983;;;;;LOCAL;default/
+210;Jameson Black 4cl;;;item;9.0;;Whiskey;Jameson Black 4cl;1.7966;;;;;LOCAL;default/
+211;Glenmorangie 2cl;;;item;5.0;;Whiskey;Glenmorangie 2cl;0.8069;;;;;LOCAL;default/
+212;Glenmorangie 4cl;;;item;9.0;;Whiskey;Glenmorangie 4cl;1.6137;;;;;LOCAL;default/
+213;Laphroiag 2cl;;;item;6.0;;Whiskey;Laphroiag 2cl;1.0526;;;;;LOCAL;default/
+214;Laphroiag 4cl;;;item;9.5;;Whiskey;Laphroiag 4cl;2.1051;;;;;LOCAL;default/
+217;Glenfiddich 2cl;;;item;5.0;;Whiskey;Glenfiddich 2cl;0.8531;;;;;LOCAL;default/
+218;Glenfiddich 4cl;;;item;9.0;;Whiskey;Glenfiddich 4cl;1.7063;;;;;LOCAL;default/
+219;Glenkinchie 2cl;;;item;5.0;;Whiskey;Glenkinchie 2cl;1.0337;;;;;LOCAL;default/
+220;Glenkinchie 4cl;;;item;9.0;;Whiskey;Glenkinchie 4cl;2.0674;;;;;LOCAL;default/
+221;Talisker 2cl;;;item;4.5;;Whiskey;Talisker 2cl;0.9614;;;;;LOCAL;default/
+222;Talisker 4cl;;;item;8.0;;Whiskey;Talisker 4cl;1.9229;;;;;LOCAL;default/
+223;Lagavulin 2cl;;;item;7.0;;Whiskey;Lagavulin 2cl;1.6400;;;;;LOCAL;default/
+224;Lagavulin 4cl;;;item;10.0;;Whiskey;Lagavulin 4cl;3.2700;;;;;LOCAL;default/
+225;Jack Daniels 2cl;;;item;2.5;;Whiskey;Jack Daniels 2cl;0.5178;2.00000;VOLUME;;;LOCAL;default/
+226;Jack Daniels 4cl;;;item;4.5;;Whiskey;Jack Daniels 4cl;1.0356;;;;;LOCAL;default/
+227;Bulleit 2cl;;;item;3.0;;Whiskey;Bulleit 2cl;0.6200;;;;;LOCAL;default/
+228;Bulleit 4cl;;;item;5.0;;Whiskey;Bulleit 4cl;1.2300;;;;;LOCAL;default/
+229;Maker's Mark 2cl;;;item;3.0;;Whiskey;Maker's Mark 2cl;0.5658;;;;;LOCAL;default/
+230;Maker's Mark 4cl;;;item;5.0;;Whiskey;Maker's Mark 4cl;1.1316;;;;;LOCAL;default/
+231;Jameson 2cl;;;item;3.0;;Whiskey;Jameson 2cl;0.4880;;;;;LOCAL;default/
+232;Jameson 4cl;;;item;5.0;;Whiskey;Jameson 4cl;0.9760;;;;;LOCAL;default/
+233;Salami extra;;;item;1.0;;Food;Salami extra;0.4336;40.00000;MASS;;;LOCAL;default/
+234;Oliven;;;item;1.0;;Food;Oliven;0.2045;50.00000;MASS;;;LOCAL;default/
+236;Extras Pizza;;0-*;group;;;;Extras Pizza;;;;;;LOCAL;
+237;Buzzernummer;;;item;0.0;;Food;Buzzernummer;0.0000;;;;;LOCAL;
+238;Buzzernummer?;;1-1;group;;;;Buzzernummer?;;;;;;LOCAL;
+239;mayo & Ketchup;;;item;0.6;;Food;mayo & Ketchup;0.1737;;;;;LOCAL;default/
+240;Vegan Mayo;;;item;0.6;;Food;Vegan Mayo;0.4200;60.00000;VOLUME;;;LOCAL;default/
+241;Garlic Dip;;;item;1.0;;Food;Garlic Dip;0.0731;;;;;LOCAL;default/
+242;Mayo;;;item;0.6;;Food;Mayo;0.1800;;;;;LOCAL;default/
+243;BBQ;;;item;1.0;;Food;BBQ;0.0837;;;;;LOCAL;default/
+244;Ketchup;;;item;0.6;;Food;Ketchup;0.0823;;;;;LOCAL;default/
+245;Vegan Cheese;;;item;1.0;;Food;Vegan Cheese;1.2940;100.00000;MASS;;;LOCAL;default/
+246;Guacamole;;;item;1.0;;Food;Guacamole;0.2502;30.00000;MASS;;;LOCAL;default/
+247;salsa;;;item;1.0;;Food;salsa;0.2200;20.00000;MASS;;;LOCAL;default/
+248;Sour Cream;;;item;1.0;;Food;Sour Cream;0.1089;30.00000;MASS;;;LOCAL;default/
+249;Mushrooms;;;item;1.0;;Food;Mushrooms;0.2100;50.00000;MASS;;;LOCAL;default/
+250;Jalapeno;;;item;1.0;;Food;Jalapeno;0.4414;70.00000;MASS;;;LOCAL;default/
+251;Dried Tomaotes;;;sub-item;1.0;;Food;Dried Tomaotes;0.4225;;;;;LOCAL;default/
+252;Mozzarella Cheese;;;item;1.0;;Food;Mozzarella Cheese;0.8020;100.00000;MASS;;;LOCAL;default/
+253;Pepperoni;;;item;1.0;;Food;Pepperoni;0.4236;50.00000;MASS;;;LOCAL;default/
+254;Capers;;;item;1.0;;Food;Capers;;;;;;LOCAL;default/
+255;Oat Milk1;;;item;0.0;;Coffee;Hafer Milch;0.5880;;;;;LOCAL;default/
+256;Plantation Dark 2cl;;;item;3.0;;Rum;Plantation Dark 2cl;0.4491;;;;;LOCAL;default/
+257;Plantation Dark 4cl;;;item;5.5;;Rum;Plantation Dark 4cl;0.8983;;;;;LOCAL;default/
+258;Plantation 3 Stars 2cl;;;item;3.0;;Rum;Plantation 3 Stars 2cl;0.4443;;;;;LOCAL;default/
+261;Plantation 3 Stars 4cl;;;item;5.5;;Rum;Plantation 3 Stars 4cl;0.8886;;;;;LOCAL;
+262;Glühwein 0,2l;;;item;4.5;;Wein;Glühwein 0,2l;0.3592;;;;;LOCAL;default/
+264;Mimosa;;;item;5.0;;Wein;Mimosa;0.3325;;;;;LOCAL;default/
+265;Cremant de Loire 0,75 Bottle;;;item;35.0;;Wein;Raphael Midoir Cremant Weiss 0,75 Bottle;9.6400;1.00000;VOLUME;;;LOCAL;default/
+266;Rose Wein 0,2l;;;item;6.0;;Wein;Rose Wein;1.4457;;;;;LOCAL;default/
+267;Rotwein RIOJA 0,2l;;;item;6.0;;Wein;Rotwein RIOJA 0,2l;1.4853;;;;;LOCAL;default/
+268;Rotwein Cote du Rhone 0,2l;;;item;6.0;;Wein;Rotwein Cote du Rhone;1.2840;;;;;LOCAL;default/
+269;Weisswein Grauburgunder 0,2l;;;item;6.0;;Wein;Weisswein Grauburgunder 0,2;1.0760;0.20000;VOLUME;;;LOCAL;default/
+270;Weisswein-Schorle;;;item;6.0;;Wein;Weisswein-Schorle;0.5966;;;;;LOCAL;default/
+271;Extras Nachos;;0-*;group;;;;Extras Nachos;;;;;;LOCAL;
+272;Wedges;;;combo;6.5;;Food;Wedges;0.8204;;;;;LOCAL;
+273;Milk;;1-1;group;;;;Milk;;;;;;LOCAL;
+274;Nachos;;;combo;6.0;;Food;Nachos;1.1533;;;;;LOCAL;
+275;Cherry Tomatoes;;;sub-item;1.0;;Food;Cherry Tomatoes;0.5768;70.00000;MASS;;;LOCAL;
+276;Extra Cheese;;;sub-item;1.0;;Food;Extra Cheese;0.4010;100.00000;MASS;;;LOCAL;
+277;Thomas Henry Tonic;;1-1;group;;;;Thomas Henry Tonic;;;;;;LOCAL;
+282;Nachos Extra Free;;1-1;group;0.0;;;Nachos Extra Free;;;;;;LOCAL;
+283;Wedges extras;;0-1;group;0.0;;;Wedges extras;;;;;;LOCAL;
+294;Sweet Potatoes;;;combo;6.5;;Food;Sweet Potatoes;1.8763;;;;;LOCAL;
+295;Estrella Damm 0,33l Bottle;;;item;4.5;;Alkohol;Estrella Damm 0,33l Bottle;0.8100;0.33000;VOLUME;;;LOCAL;
+296;Vegan Nachos;;;combo;6.5;;Food;Vegan Nachos;1.5223;;;;;LOCAL;
+302;OBC Strong - 0,33l;;;item;4.5;;Ciders;OBC Strong - 0,33l;1.1000;0.33000;VOLUME;;;LOCAL;default/
+303;Pringles Red;;;item;2.5;;Snacks;Pringles Red;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+304;OA - Pringles Black;;;item;2.5;;Snacks-OA;OA - Pringles Black;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+305;Pringles Green;;;item;2.5;;Snacks;Pringles Green;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+306;Pringles Orange;;;item;2.5;;Snacks;Pringles Orange;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+307;OA - Ultje Nuts Salty;;;item;2.0;;Snacks-OA;OA - Ultje Nuts Salty;0.6500;1.00000;DIMENSION_LESS;;;LOCAL;default/
+309;Blueberry Muffin;;;item;3.0;;Snacks;Blueberry Muffin;1.2600;1.00000;DIMENSION_LESS;;;LOCAL;default/
+310;Chocolate Muffin;;;item;3.0;;Snacks;Chocolate Muffin;1.2600;1.00000;DIMENSION_LESS;;;LOCAL;default/
+311;Pool Table;;;item;;;Divers;Pool Table;0.0000;;;;;LOCAL;
+312;Castle shopping bag;;;item;10.0;;accessories;Castle shopping bag;3.3000;;;;;LOCAL;
+315;No Tonic;;;item;0.0;;Divers;No Tonic;0.0000;;;;;LOCAL;
+316;Baby guinness;;;item;3.0;;SHOTS;Baby guinness;0.4245;;;;;LOCAL;
+317;Bombay Sapphire;;;combo;4.0;;GIN;Bombay Sapphire;0.9944;;;;;LOCAL;
+318;Tap 3 0,3L Quellmalz - Spez. Pils;;;item;3.5;;Tap Craft Beer 0,3L;Tap 3 0,3L Quellmalz - Spez. Pils;0.7500;;;;;LOCAL;default/
+319;Tap 3 0,5L Quellmalz - Spez. Pils;;;item;5.0;;Tap Craft Beer 0,5L;Tap 3 0,5L Quellmalz - Spez. Pils;1.0900;;;;;LOCAL;default/
+324;T-shirt;;;item;15.0;;Divers;T-shirt;;;;;;LOCAL;
+325;Wedges Extras paid;;0-*;group;;;;Wedges Extras paid;;;;;;LOCAL;
+326;Campari Spritz;;;item;9.0;;Long Drinks;Campari Spritz;1.1554;;;;;LOCAL;default/
+329;Schöfferhofer Hefe Bottle 0,5L;;;item;4.5;;Alkohol;Schöfferhofer Hefe Bottle 0,5L;0.9100;0.50000;VOLUME;;;LOCAL;default/
+330;Castle glass 0.3;;;item;4.0;;accessories;Castle glass 0.3;3.5000;;;;;LOCAL;default/
+331;Castle glass 0.5;;;item;6.0;;accessories;Castle glass 0.5;2.5000;;;;;LOCAL;default/
+336;Moccha;;;item;4.5;;Coffee;Moccha;;;;;;LOCAL;
+339;Jack Daniel's - Rye 4 cl;;;item;4.5;;Whiskey;Jack Daniel's - Rye 0,4cl;1.4500;2.00000;VOLUME;;;LOCAL;
+340;Jack Daniel's - Rye 2 cl;;;item;2.5;;Whiskey;Jack Daniel's - Rye 2 cl;0.7300;;;;;LOCAL;
+346;pizza dough;;;item;5.56;;Food;pizza dough;0.5886;1.00000;DIMENSION_LESS;;;LOCAL;default/
+347;FP Mozzarella gerieben 40% - 1kg;;;item;0.0;;Food;recipe-Mozarella - 2KG;8.0200;1.00000;MASS;;;LOCAL;default/
+348;Pizza Sauce - Citadel Portugal - 4200g;;;item;0.0;;Food;tomato sauce - 4.1Kg;9.4100;4.20000;MASS;;;LOCAL;default/
+350;Sloe Gin Fizz;;;item;11.0;;Cocktails;Sloe Gin Fizz;1.5763;;;;;LOCAL;
+351;Weiss Wein - Grauburgunder 1l;;;item;27.0;;Wein;Weiss Wein - Grauburgunder 1l;5.3800;1.00000;VOLUME;;;LOCAL;
+352;Brandenburger Quell Classic - 0,7l Flasche;;;item;0.0;;Mixers;Brandenburger Quell classic;0.4100;0.70000;VOLUME;;;LOCAL;
+354;Citadelle Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;citadelle Gin 0,7 Flasche;20.9000;0.70000;VOLUME;;;LOCAL;
+355;Larios Rose Gin - 0.7l Flasche;;;item;0.0;;Spirit Bottles;Larios Rose Gin 0.7l - Flasche;12.1300;0.70000;VOLUME;;;LOCAL;
+356;Jack Daniels - 1l Flasche;;;item;0.0;;Whiskey Bottles;Jack daniels 1l - Flasche;25.8900;1.00000;VOLUME;;;LOCAL;
+357;Bulleit Whiskey - 0.7l Flasche;;;item;0.0;;Whiskey Bottles;Bulleit Whiskey;21.9700;0.70000;VOLUME;;;LOCAL;
+358;Jameson - 0.7l Flasche;;;item;0.0;;Whiskey Bottles;Jameson 1l - Flasche;17.0800;0.70000;VOLUME;;;LOCAL;
+359;Jameson BLACK - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;jameson BLACK 0.7l - Flasche;31.4400;0.70000;VOLUME;;;LOCAL;
+360;Berliner Luft 1l - Flasche;;;item;0.0;;Spirit Bottles;Berliner Luft 1l - Flasche;10.0700;1.00000;VOLUME;;;LOCAL;
+361;Brlo Cider - Rose;;;item;4.5;;Ciders;Brlo Cider - Rose;1.4500;0.33000;VOLUME;;;LOCAL;default/
+363;Brlo Cider - Classic Apple;;;item;4.5;;Ciders;Brlo Cider - Classic Apple;1.4500;0.33000;VOLUME;;;LOCAL;default/
+364;Brlo - HELLES 0,33L;;;item;4.5;;Alkohol;Brlo HELLES - 0,33l;1.1600;0.33000;VOLUME;;;LOCAL;default/
+365;Plantation DARK Rum - 0.7l Flasche;;;item;0.0;;Spirit Bottles;Plantation Rum 0.7l - Flasche;15.7200;0.70000;VOLUME;;;LOCAL;
+366;Plantation 3 star Rum - 0.7l Flasche;;;item;0.0;;Spirit Bottles;Plantation 3 star Rum 0.7l - Flasche;15.5500;0.70000;VOLUME;;;LOCAL;
+367;Thomas Henry - Spicy Ginger - 1l Flasche;;;item;0.0;;Mixers;Fever Tree Ginger Beer;1.7600;1.00000;VOLUME;;;LOCAL;
+368;Magners Original - 0.568l;;;item;7.0;;Ciders;Magners Original - 0.568l;2.1800;0.56800;VOLUME;;;LOCAL;default/
+369;Magners Berry - 0.568l;;;item;7.0;;Ciders;Magners Berry - 0.568l;2.1800;0.56800;VOLUME;;;LOCAL;default/
+370;Magners Pear - 0.568l;;;item;7.0;;Ciders;Magners Pear - 0.568l;2.1800;0.56800;VOLUME;;;LOCAL;default/
+371;Rauch Orangensaft - 1l Flasche;;;item;0.0;;Mixers;Dietz Orangensaft;3.3300;1.00000;VOLUME;;;LOCAL;
+372;Frizzante HM - Prosecco 0,75l;;;item;28.0;;Wein;Prosecco Bottle 0,75l;2.4900;0.75000;VOLUME;;;LOCAL;
+373;Aperol - 1l;;;item;0.0;;Spirit Bottles;Aperol - 1l;16.1100;1.00000;VOLUME;;;LOCAL;
+374;Bulmers Original - 0,5l;;;item;7.0;;Ciders;Bulmers Originial - 0,5l;1.8700;0.50000;VOLUME;;;LOCAL;default/
+375;Bulmers Red Berries - 0,5l;;;item;7.0;;Ciders;Bulmers Red Berries - 0,5l;1.8700;0.50000;VOLUME;;;LOCAL;default/
+376;Bulmers Pear - 0,5l;;;item;7.0;;Ciders;Bulmers Pear - 0,5l;1.8700;0.50000;VOLUME;;;LOCAL;default/
+377;OBC Classic - 0,33l;;;item;4.5;;Ciders;OBC Classic - 0,33l;1.1000;0.33000;VOLUME;;;LOCAL;default/
+378;Somersby Blackberry Cider - 0,33l;;;item;4.5;;Ciders;Somersby Blackberry Cider - 0,33l;1.3200;0.33000;VOLUME;;;LOCAL;default/
+379;Somersby Apple cider - 0,33l;;;item;4.5;;Ciders;Somersby Apple cider - 0,33l;1.3200;0.33000;VOLUME;;;LOCAL;default/
+380;Somersby Mango & Lime - 0,33l;;;item;4.5;;Ciders;Somersby Mango & Like - 0,33l;1.2200;0.33000;VOLUME;;;LOCAL;default/
+382;Glenfiddich Sing. Malt 12 - 0.7l Flasche;;;item;;;Whiskey Bottles;Glenfiddich Sing. Malt 12 - 0.7l Flasche;29.8600;0.70000;VOLUME;;;LOCAL;default/
+383;Glenkinchie 12J - 0.7l Flasche;;;item;;;Whiskey Bottles;Glenkinchie 12J - 0.7l Flasche;36.9500;0.70000;VOLUME;;;LOCAL;default/
+384;Glenmorangie 10j - 0.7l Flasche;;;item;;;Whiskey Bottles;Glenmorangie 10j - 0.7l Flasche;28.2400;0.70000;VOLUME;;;LOCAL;default/
+385;Lagavulin 8J - 0,7l Flasche;;;item;;;Whiskey Bottles;lagvulin 8J - 0.7l Flasche;57.2300;0.70000;VOLUME;;;LOCAL;default/
+386;Laphroaig 10J - 0,7l Flasche;;;item;;;Whiskey Bottles;Laphroaig 10J - 0.7l Flasche;36.8400;0.70000;VOLUME;;;LOCAL;default/
+387;Talisker 10J - 0,7l Flasche;;;item;;;Whiskey Bottles;Talisker 10J - 0.7l Flasche;33.6500;0.70000;VOLUME;;;LOCAL;default/
+388;Maker's Mark - 1l Flasche;;;item;0.0;;Whiskey Bottles;Maker's Mark - 1l Flasche;28.2900;1.00000;VOLUME;;;LOCAL;
+389;Beefeater - 1l Flasche;;;item;;;Spirit Bottles;beefeater - 1l Flasche;21.2600;1.00000;VOLUME;;;LOCAL;default/
+390;Bombay Saphire - 1l Flasche;;;item;;;Spirit Bottles;Bombay Saphire - 1l Flasche;24.8600;1.00000;VOLUME;;;LOCAL;default/
+391;Botanist - 0.7l Flasche;;;item;;;Spirit Bottles;Botanist - 0.7l Flasche;27.8300;0.70000;VOLUME;;;LOCAL;default/
+392;Bulldog - 0.7l Flasche;;;item;;;Spirit Bottles;Bulldog - 0.7l Flasche;19.9100;0.70000;VOLUME;;;LOCAL;default/
+393;Gin Mare - 0.7l Flasche;;;item;;;Spirit Bottles;Mare - 0.7l Flasche;32.9700;0.70000;VOLUME;;;LOCAL;default/
+394;Danish Crown Professional Halal Salami - 1kg;;;item;0.0;;Food;1000g ARO Pizza-Salami Classic;10.8400;1000.00000;MASS;;;LOCAL;
+395;Henkelmann Peperonisalami, fein gekörnt - 1kg;;;item;0.0;;Food;1000g ARO Pizza-Pepperoni Classic;10.5900;1000.00000;MASS;;;LOCAL;
+399;Dietz Tomatensaft - 1l Flasche;;;item;;;Mixers;Dietz Tomatensaft - 1l Flasche;1.3900;1.00000;VOLUME;;;LOCAL;default/
+400;Sangrita Picante - 0.5l Flasche;;;item;;;Mixers;Sangrita Picante - 0.5l Flasche;2.7300;500.00000;VOLUME;;;LOCAL;default/
+401;Tabasco - 60 ml Flasche;;;item;;;Divers;Tabasco - 60 ml Flasche;2.8400;60.00000;VOLUME;;;LOCAL;default/
+402;Wodka HM - 1l Flasche;;;item;;;Spirit Bottles;Haskowitch Wodka - 1l Flasche;9.1800;1.00000;VOLUME;;;LOCAL;default/
+403;Mexicaner - Batch - 2.86l;;;item;;;SHOTS;Mexicaner - Batch - 2.86l;17.1390;2.86000;VOLUME;;;LOCAL;default/
+404;Rotwein - Cote du Rhone Momm. 1l Flasche;;;item;27.0;;Wein;Rotwein - Cote du Rhone 1l;6.4200;1.00000;VOLUME;;;LOCAL;
+405;Rotwein - RIOJA Valde. Tinto 0,75l Flasche;;;item;18.9;;Wein;Rotwein - El Coto Rosado RIOJA 0,75l Flasche;5.5700;0.75000;VOLUME;;;LOCAL;
+406;Flying Solo Rose Gayda - Rose 0,75l Flasche;;;item;0.0;;Wein;Corsaire Rosewein - Rose 0,75l Flasche;5.0600;0.70000;VOLUME;;;LOCAL;
+407;Thomas Henry - Ginger Ale - 1l Flasche;;;item;0.0;;Mixers;Fever Tree Ginger Ale 0,75l Flasche;1.7600;1.00000;VOLUME;;;LOCAL;
+408;Fever Tree Wild Berry - 0,75l Flasche;;;item;0.0;;Mixers;Fever Tree Wild Berry 0,75l Flasche;1.9800;0.75000;VOLUME;;;LOCAL;
+409;Sprite PET - 1l Flasche;;;item;0.0;;Mixers;Sprite 1l Flasche;1.2400;1.00000;VOLUME;;;LOCAL;
+410;Coca-Cola PET - 1l Flasche;;;item;0.0;;Mixers;Coca-Cola PET 1l Flasche;1.2400;1.00000;VOLUME;;;LOCAL;
+411;Dietz Ananassaft - 1l Flasche;;;item;0.0;;Mixers;Dietz Ananassaft 1l Flasche;2.0300;1.00000;VOLUME;;;LOCAL;
+412;Baileys Irish Cream - 1l Flasche;;;item;0.0;;Spirit Bottles;Baileys Irish Cream 1l Flasche;17.6600;1.00000;VOLUME;;;LOCAL;
+413;Tequila Olmeca Silver - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Tequila Olmeca Silver 0,7l;22.9700;0.70000;VOLUME;;;LOCAL;
+415;Jägermeister 35% - 1l Flasche;;;item;0.0;;Spirit Bottles;Jägermeister 35% 1l Flasche;18.7100;1.00000;VOLUME;;;LOCAL;
+416;Sambuca Ramazzotti 38% - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Sambuca Ramazzotti 38% 0,7l Flasche;12.3700;0.70000;VOLUME;;;LOCAL;
+417;Lillet Blanc Weinaperitif - 0,75l Flasche;;;item;0.0;;Spirit Bottles;Lillet Blanc Weinaperitif 0,75l;14.2700;0.75000;VOLUME;;;LOCAL;
+418;Kahlua Coffee Liqueur - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Kahlua Coffee Liqueur - 0,7l Flasche;15.6900;0.70000;VOLUME;;;LOCAL;
+419;Limoncello Ramazzotti - 1l Flasche;;;item;0.0;;Spirit Bottles;Limoncello Ramazzotti - 1l Flasche;17.0500;1.00000;VOLUME;;;LOCAL;
+420;Campari - 1l Flasche;;;item;0.0;;Spirit Bottles;Campari - 1l Flasche;19.1200;1.00000;VOLUME;;;LOCAL;
+421;Vermouth Punt E Mes - 0,75l Flasche;;;item;0.0;;Spirit Bottles;Vermouth Punt E Mes - 0,75l Flasche;13.9800;0.75000;VOLUME;;;LOCAL;
+422;Disaronno Amaretto - 1l Flasche;;;item;0.0;;Spirit Bottles;Disaronno Amaretto - 0,7l Flasche;19.0300;1.00000;VOLUME;;;LOCAL;
+423;Pitu Cachaca - 1l Flasche;;;item;0.0;;Spirit Bottles;Pitu Cachaca - 1l Flasche;15.1100;1.00000;VOLUME;;;LOCAL;
+424;Bols Peach - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Bols Peach - 0,7l Flasche;10.6900;0.70000;VOLUME;;;LOCAL;
+425;Cointreau - 0.7l Flasche;;;item;0.0;;Spirit Bottles;Cointreau - 1l Flasche;16.2500;0.70000;VOLUME;;;LOCAL;
+426;Barracuda Spiced Rum - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Barracuda Spiced Rum - 0,7l Flasche;14.9900;0.70000;VOLUME;;;LOCAL;
+427;Hayman's Sloe Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Hayman's Sloe Gin - 0,7l Flasche;24.1000;0.70000;VOLUME;;;LOCAL;
+428;Hendrick's Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Hendrick's Gin - 0,7l Flasche;27.4700;0.70000;VOLUME;;;LOCAL;
+429;Illusionist Dry Gin - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Illusionist Dry Gin - 0,5l Flasche;30.9400;0.50000;VOLUME;;;LOCAL;
+430;Illusionist Masquerade alkoholfrei - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Illusionist Masquerade alkoholfrei - 0,5l Flasche;17.9100;0.50000;VOLUME;;;LOCAL;
+431;Inverroche Amber - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Inverroche Amber - 0,7l Flasche;28.9100;0.70000;VOLUME;;;LOCAL;
+432;Mampe Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Mampe Gin - 0,7l Flasche;11.3800;0.70000;VOLUME;;;LOCAL;
+433;Martin Millers - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Martin Millers - 0,7l Flasche;20.4400;0.70000;VOLUME;;;LOCAL;
+434;Monkey 47 Dry - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Monkey 47 Dry - 0,5l Flasche;32.6100;0.50000;VOLUME;;;LOCAL;
+435;Roku Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Roku Gin - 0,7l Flasche;24.2200;0.70000;VOLUME;;;LOCAL;
+436;Siegfried Rheinland Dry - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Siegfried Rheinland Dry - 0,5l Flasche;26.4100;0.50000;VOLUME;;;LOCAL;
+437;Siegfried Wonderleaf Afrei - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Siegfried Wonderleaf Afrei - 0,5l Flasche;16.3600;0.50000;VOLUME;;;LOCAL;
+438;Sipsmith London Dry - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Sipsmith London Dry - 0,7l Flasche;20.9300;0.70000;VOLUME;;;LOCAL;
+439;Gin Sul - 0,5l Flasche;;;item;0.0;;Spirit Bottles;Gin Sul - 0,5l Flasche;29.4500;0.50000;VOLUME;;;LOCAL;
+440;Tanqueray Dry - 1l Flasche;;;item;0.0;;Spirit Bottles;Tanqueray Dry - 1l Flasche;23.2200;1.00000;VOLUME;;;LOCAL;
+441;Tanqueray 0.0% - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Tanqueray 0.0% - 0,7l Flasche;16.5100;0.70000;VOLUME;;;LOCAL;
+442;Tanqueray No.10 - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Tanqueray No.10 - 0,7l Flasche;25.2700;0.70000;VOLUME;;;LOCAL;
+443;Grace O'Malley Gin - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Grace O'Malley Gin - 0,7l Flasche;24.2200;0.70000;VOLUME;;;LOCAL;
+444;Jack Daniels Rye - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;Jack Daniels Rye - 0,7l Flasche;25.4700;0.70000;VOLUME;;;LOCAL;
+445;Gentleman Jack - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;Gentleman Jack - 0,7l Flasche;22.9600;0.70000;VOLUME;;;LOCAL;
+446;Jack Daniels Fire - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;Jack Daniels Fire - 0,7l Flasche;18.8500;0.70000;VOLUME;;;LOCAL;
+447;Jack Daniels Honey - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;Jack Daniels Honey - 0,7l Flasche;18.8500;0.70000;VOLUME;;;LOCAL;
+448;Jack Daniels Apple - 0,7l Flasche;;;item;0.0;;Whiskey Bottles;Jack Daniels Apple - 0,7l Flasche;18.8500;0.70000;VOLUME;;;LOCAL;
+449;Cow Milk - H-Milch 3.5% - 1l flasche;;;item;0.0;;Coffee;Cow Milk - Weihenstephan Barista H-Milch - 1l flasche;1.1300;1.00000;VOLUME;;;LOCAL;
+450;Oat Milk Oatly Barista - 1l Flasche;;;item;0.0;;Coffee;Oat Milk Oatly Barista - 1l Flasche;1.9600;1.00000;VOLUME;;;LOCAL;
+451;Rioba Karamell Syrup 0.7l Flasche;;;item;0.0;;Coffee;Rioba Karamell Syrup 0.7l Flasche;5.3500;0.70000;VOLUME;;;LOCAL;
+452;Monin Chai Tea Sirup - 0,7l Flasche;;;item;0.0;;Coffee;Monin Chai Tea Sirup - 0,7l Flasche;8.1000;0.70000;VOLUME;;;LOCAL;
+453;Giffard Haselnusssirup - 1l Flasche;;;item;0.0;;Coffee;Giffard Haselnusssirup - 1l Flasche;8.1900;1.00000;VOLUME;;;LOCAL;
+455;Bedda for Pizza vegan Reibekäse 1kg;;;item;0.0;;Food;Violife Vegan Mozzarella - 1kg;12.9400;1.00000;MASS;;;LOCAL;
+456;TK GIA Pizzateigkugel 35x300g;;;item;0.0;;Food;POINT OF FOOD Pizzateig 10 stuck 300g - 3kg;20.6000;10.50000;MASS;;;LOCAL;
+457;TK Aviko Spicy Jacket Wedges - 2.5kg;;;item;0.0;;Food;METRO Spicy Wedges - 2.5kg;5.8600;2.50000;MASS;;;LOCAL;
+458;Wanted Tortilla Chips Chili - 450g;;;item;0.0;;Food;METRO Tortilla Chips Hot - 750g;1.9100;450.00000;MASS;;;LOCAL;
+459;METRO Tomato Dip Salsa 1,05kg;;;item;0.0;;Food;METRO Tomato Dip Salsa 1,05kg;11.4600;1.05000;MASS;;;LOCAL;
+460;TK Avocado-Creme, Guacamole Classic - 1kg;;;item;0.0;;Food;METRO Creamy Dip Guacamole - 1kg;8.3400;1.00000;MASS;;;LOCAL;
+461;Apostels Sour Cream - 3kg;;;item;0.0;;Food;Apostels Sour Cream - 1kg;10.8900;3.00000;MASS;;;LOCAL;
+462;METRO Getrocknete Tomaten - 1.7l;;;item;0.0;;Food;METRO Getrocknete Tomaten - 1.7l;10.2600;1.70000;VOLUME;;;LOCAL;
+463;Del Sol Jalapeno Chili - 1700g;;;item;0.0;;Food;Adria Jalapenos Scheiben - 3kg;10.7200;1700.00000;MASS;;;LOCAL;
+464;Oliven, schwarz, in Scheiben - 2350g;;;item;0.0;;Food;Aro Oliven geschwärzt in Scheiben - 4.25l;9.6100;2350.00000;MASS;;;LOCAL;
+465;Champignons 3.Wahl, China - 1930g;;;item;0.0;;Food;Aro Champignons 3.Wahl - 2.65l;8.0600;1930.00000;MASS;;;LOCAL;
+466;SC Tomatenketchup - 875ml;;;item;0.0;;Food;Aro Tomatenketchup - 875g;2.8800;875.00000;VOLUME;;;LOCAL;
+467;SC Salatmayonnaise 50% - 875ml;;;item;0.0;;Food;Aro Delikatess Mayonnaise - 500ml;3.2000;875.00000;VOLUME;;;LOCAL;
+468;Homann Vegane Mayonnaise - 875ml;;;item;0.0;;Food;Homann Vegane Mayonnaise - 875ml;7.4200;875.00000;VOLUME;;;LOCAL;
+469;Mississippi BBQ Sauce - 1814g;;;item;0.0;;Food;Mississippi BBQ Sauce - 1814g;7.5900;1814.00000;MASS;;;LOCAL;
+470;O+G Tomaten Cherrytoma. rot 250g;;;item;0.0;;Food;Datteltomaten, Marokko - 1kg;2.0600;250.00000;MASS;;;LOCAL;
+471;TK Beerenmix Extra - 2.5kg;;;item;0.0;;Food;METRO Beeren-Mix tiefgefroren - 1kg;10.7600;2.50000;MASS;;;LOCAL;
+472;TK SC Süßkart.Pommes 12x12mm 2,5kg;;;item;0.0;;Food;METRO Sweet Potato Fries - 2.5kg;13.0300;2.50000;MASS;;;LOCAL;
+473;Frankfurter Spitzkrug Pils 50l;;;item;0.0;;Kegs;Bergisch Löwen Pils 50l;45.5800;50.00000;VOLUME;;;LOCAL;
+474;Quellmalz Dieter Spezial Pils 30l;;;item;0.0;;Kegs;Quellmalz Dieter Spezial Pils 30l;65.4500;30.00000;VOLUME;;;LOCAL;
+476;Guinness Fass 30l;;;item;0.0;;Kegs;Guinness Fass 30l;98.4700;30.00000;VOLUME;;;LOCAL;
+478;Stowford Cider Fass 30l;;;item;0.0;;Kegs;Stowford Cider Fass 30l;99.9600;30.00000;VOLUME;;;LOCAL;
+479;Hopscor IPA - Strassenbräu Castle IPA Fass 50l;;;item;0.0;;Kegs;Strassenbräu Castle Hopscor IPA Fass 50l;154.7000;50.00000;VOLUME;;;LOCAL;
+486;Fuerst Wiacek Landbier 30l;;;item;0.0;;Kegs;Fuerst Wiacek Landbier 30l;73.7800;30.00000;VOLUME;;;LOCAL;
+487;Espresso Martini Glückskultur - 0,75l Flasche;;;item;0.0;;Spirit Bottles;Espresso Martini Glückskultur - 0,75l Flasche;9.4100;0.75000;VOLUME;;;LOCAL;
+488;Passion Fruit Margarita Glückskultur - 0,75l Flasche;;;item;;;Spirit Bottles;Passion Fruit Margarita Glückskultur - 0,75l Flasche;9.4100;0.75000;VOLUME;;;LOCAL;default/
+489;Neukölln Cosmo Glückskultur - 0,75l Flasche;;;item;;;Spirit Bottles;Neukölln Cosmo Glückskultur - 0,75l Flasche;9.4100;0.75000;VOLUME;;;LOCAL;default/
+490;Paloma Glückskultur - 0,75l Flasche;;;item;;;Spirit Bottles;Paloma Glückskultur - 0,75l Flasche;9.4100;0.75000;VOLUME;;;LOCAL;default/
+491;Thyme of my Life Glückskultur - 0,75l Flasche;;;item;;;Spirit Bottles;Thyme of my Life Glückskultur - 0,75l Flasche;9.4100;0.75000;VOLUME;;;LOCAL;default/
+492;Sarti Rosa - 0,70 Flasche;;;item;0.0;;Spirit Bottles;Sarti Rosa - 0,70 Flasche;15.4200;0.70000;VOLUME;;;LOCAL;
+493;Tails Berry Mojito - 1l Flasche;;;item;0.0;;Spirit Bottles;Tails Berry Mojito - 1l Flasche;17.9900;1.00000;VOLUME;;;LOCAL;
+494;Giffard Rohrzucker Sirup - 1l Flasche;;;item;0.0;;Spirit Bottles;Giffard Rohrzucker Sirup - 1l Flasche;7.0300;1.00000;VOLUME;;;LOCAL;
+495;Hopscor Rotbier - Strassenbräu Ziegel Amber Ale 50l;;;item;0.0;;Kegs;Strassenbräu Ziegel Amber Ale 50l;148.7500;50.00000;VOLUME;;;LOCAL;
+496;Augustiner 0.33l;;;item;4.0;;Alkohol;Augustiner 0.33l;0.7900;;;;;LOCAL;default/
+498;Tap 7 0,3l - Hopscor - Rotbier;;;item;4.0;;Tap Craft Beer 0,3L;Tap 7 0,3l - Hopscor - Rotbier;0.8925;;;;;LOCAL;default/
+499;Tap 7 0,5l - Hopscor - Rotbier;;;item;5.5;;Tap Craft Beer 0,5L;Tap 7 0,5l - Hopscor - Rotbier;1.4875;;;;;LOCAL;default/
+507;Vodka Tonic;;;combo;6.0;;Long Drinks;Vodka Tonic;1.3849;;;;;LOCAL;
+508;Absolut Sensations 20% - 1l Flasche;;;item;0.0;;Spirit Bottles;Absolut Sensations 20% - 1l Flasche;16.6600;1.00000;VOLUME;;;LOCAL;
+509;Berliner Berg - Pale Ale 0,33l;;;item;4.5;;Alkohol;Berliner Berg - Pale Ale 0,33l;1.3400;0.33000;VOLUME;;;LOCAL;default/
+515;Hopscor Pale Ale - Strassenbräu Sonnenallee 50l;;;item;0.0;;Kegs;Hopscor Pale Ale - Strassenbräu Sonnenallee 50l;148.7500;50.00000;VOLUME;;;LOCAL;
+517;Tonic bottle - 0.2l;;;item;3.0;;Soft Drinks;Tonic bottle - 0.2l;0.7500;;;;;LOCAL;
+518;Red breast - irish whisky - 2 cl;;;item;6.0;;Whiskey;Red breast - irish whisky - 2 CL;;;;;;LOCAL;
+522;Coke Mixer;;;item;3.0;;Long Drinks;Coke Mixer;0.2480;;;;;LOCAL;
+527;Fever Tree - Grapefruit 0,2l;;;item;3.0;;GIN;Fever Tree - Grapefruit 0,2l;1.1400;0.20000;VOLUME;;;LOCAL;
+528;Giffard Grenadinesirup 1l;;;item;0.0;;Spirit Bottles;Giffard Grenadinesirup 1l;6.7600;1.00000;VOLUME;;;LOCAL;
+529;Monin Vanillesirup 1l;;;item;0.0;;Spirit Bottles;Monin Vanillesirup 1l;8.9800;1.00000;VOLUME;;;LOCAL;
+530;Sarti Spritz;;;item;9.0;;Long Drinks;Sarti Spritz;1.2717;;;;;LOCAL;
+533;No sauce;;;item;0.0;;Food;No sauce;;;;;;LOCAL;
+534;Sirup - 2cl;;;item;0.5;;Coffee;Sirup - 2cl;0.1700;;;;;LOCAL;
+535;Rucola;;;item;1.0;;Food;Rucola;0.2800;20.00000;MASS;;;LOCAL;
+544;Glühwein with shot;;;combo;6.5;;Wein;Glühwein with shot;0.3592;;;;;LOCAL;
+545;Shots;;1-1;group;0.0;;;Shots;;;;;;LOCAL;
+546;Baileys Hot Chocolade;;;item;6.5;;Coffee;Baileys Hot Chocolade;0.3532;;;;;LOCAL;default/
+549;Brewdog - Punk IPA Fass 30l;;;item;0.0;;Kegs;Brewdog - Punk IPA Fass 30l;78.7900;30.00000;VOLUME;;;LOCAL;
+550;Hüttenglut Glühwein Klassik 10l;;;item;0.0;;Wein;Hitzkopf Glühwein Klassik 10l;17.4600;10.00000;VOLUME;;;LOCAL;
+559;Tap 11 0,3l - Brewdog - Punk IPA 240525;;;item;5.0;;Tap Craft Beer 0,3L;Tap 11 0,3l - Brewdog - Punk IPA;0.9400;;;;;LOCAL;
+560;Tap 11 0,5l - Brewdog - Punk IPA 240525;;;item;6.5;;Tap Craft Beer 0,5L;Tap 11 0,5l - Brewdog - Punk IPA;1.5600;;;;;LOCAL;
+564;O+G Salat Rucola 125g;;;item;0.0;;Food;Rucola 150g;1.7300;125.00000;MASS;;;LOCAL;
+572;Fever Tree - Bitter Lemon 0,2l;;;item;3.0;;GIN;Fever Tree Bitter Lemon 0,2l;1.1400;;;;;LOCAL;
+573;Singleton 12J 0.7l Flasche;;;item;;;Whiskey Bottles;Singleton 12J 0.7l Flasche;26.1700;0.70000;VOLUME;;;LOCAL;
+577;BRLO Happy Pils 30l;;;item;0.0;;Kegs;BRLO Happy Pils 30l;78.8200;30.00000;VOLUME;;;LOCAL;
+582;Singleton 2cl;;;item;3.5;;Whiskey;Singleton 2cl;0.7500;;;;;LOCAL;
+583;Singleton 4cl;;;item;7.0;;Whiskey;Singleton 4cl;1.5000;;;;;LOCAL;
+584;Mexikaner Sharing Bottle 250ml;;;item;15.0;;SHOTS;Mexikaner Sharing Bottle 250ml;1.4982;;;;;LOCAL;
+585;Johnnie Walker Black 2cl;;;item;3.0;;Whiskey;Johnnie Walker Black 2cl;0.6900;;;;;LOCAL;
+586;Johnnie Walker Black 4cl;;;item;6.0;;Whiskey;Johnnie Walker Black 4cl;1.3700;;;;;LOCAL;
+587;Johnnie Walker Black Flasche 0.7l;;;item;24.03;;Whiskey Bottles;Johnnie Walker Black Flasche 0.7l;24.0300;0.70000;VOLUME;;;LOCAL;
+588;Kids Margherita Pizza;;;combo;6.0;;Pizza;Kids Margherita Pizza;0.6953;;;;;LOCAL;
+589;Johnnie & Ginger;;;item;9.0;;Long Drinks;Johnnie & Ginger;1.7251;;;;;LOCAL;
+590;Jameson & Ginger;;;item;8.0;;Long Drinks;Jameson & GInger;1.3280;;;;;LOCAL;
+595;Maracuja Caramel 2cl;;;item;2.5;;SHOTS;Maracuja Caramel 2cl;0.3144;;;;;LOCAL;
+596;Apple Cinnamon 2cl;;;item;2.5;;SHOTS;Apple Cinnamon 2cl;0.3144;;;;;LOCAL;
+597;Mampe - Popcorn 0,2cl;;;item;3.5;;SHOTS;Mampe - Popcorn 0,2cl;0.8500;;;;;LOCAL;
+600;Weihenstephan Weissbier 50l;;;item;0.0;;Kegs;Weihenstephan Weissbier 50l;102.1700;50.00000;VOLUME;;;LOCAL;
+601;Apple Cinnamon Glückskultur - 0,75l Flasche;;;item;0.0;;Spirit Bottles;Apple Cinnamon Glückskultur - 0,75l Flasche;11.7900;0.75000;VOLUME;;;LOCAL;
+602;Maracuja Caramel Glückskultur - 0,75l Flasche;;;item;0.0;;Spirit Bottles;Maracuja Caramel Glückskultur - 0,75l Flasche;11.7900;0.75000;VOLUME;;;LOCAL;
+603;Weihenstep. Hefe AF 0,5l;;;item;4.5;;Alkohol;Weihenstep. Hefe AF 0,5l;0.9100;1.00000;DIMENSION_LESS;;;LOCAL;
+604;Mampe Vodka - 0.7l Flasche;;;item;0.0;;Spirit Bottles;Mampe Vodka - 0.7l Flasche;11.1100;0.70000;VOLUME;;;LOCAL;
+605;Mampe Popcorn - 0.5l Flasche;;;item;0.0;;Spirit Bottles;Mampe Popcorn - 0.5l Flasche;21.1300;0.50000;VOLUME;;;LOCAL;
+611;Tap 9 0,3l - Adios Amigos - Gorilla 090525;;;item;7.7;;Tap Craft Beer 0,3L;Tap 9 0,3l - Adios Amigos - Gorilla;1.3700;;;;;LOCAL;
+612;Tap 9 0,5l - Adios Amigos - Gorilla 090525;;;item;9.2;;Tap Craft Beer 0,5L;Tap 9 0,5l - Adios Amigos - Gorilla;2.2900;;;;;LOCAL;
+619;Somersby Orange Spritz Cider - 0,33l;;;item;4.5;;Ciders;Somersby Orange Spritz Cider - 0,33l;1.2200;0.33000;VOLUME;;;LOCAL;
+631;Tequila Silver HM35% 1l;;;item;0.0;;Spirit Bottles;Tequila Silver HM35% 1l;14.6900;;;;;LOCAL;
+638;Hopscor Beast - Straßenbräu Hommelsap 50l;;;item;0.0;;Kegs;Hopscor Beast - Straßenbräu Hommelsap 30l;178.5000;50.00000;VOLUME;;;LOCAL;
+643;Wildberry Lillet;;;item;9.0;;Long Drinks;Wildberry Lillet;1.2891;;;;;LOCAL;
+644;Prosecco 0,1l;;;item;4.0;;Wein;Prosecco 0,1l;0.3320;;;;;LOCAL;
+655;FW Helles Alco Free 0,5l;;;item;6.0;;Alkohol;FW Helles Alco Free 0,5l;1.8900;;;;;LOCAL;
+660;Strassenbräu - Techno Therapy 30l;;;item;0.0;;Kegs;Strassenbräu - Techno Therapy 30l;124.9500;30.00000;VOLUME;;;LOCAL;
+661;Ice Tea - Elephant Bay 0,33l;;;item;3.0;;Soft Drinks;Ice Tea - Elephant Bay 0,33l;0.9800;1.00000;DIMENSION_LESS;;;LOCAL;
+662;Donut Heart - Vegan;;;item;3.0;;Snacks;Donut Heart - Vegan;0.8300;52.00000;MASS;;;LOCAL;
+663;John-John Crisps;;;item;2.5;;Snacks;John-John Crisps;0.7200;40.00000;MASS;;;LOCAL;
+670;Soft Cookie;;;item;3.0;;Snacks;Soft Cookie;0.9300;75.00000;MASS;;;LOCAL;
+671;Tap 2 0,3L Weihnstephan Helles 110225;;;item;4.5;;Tap Craft Beer 0,3L;Tap 2 0,3L Weihnstephan Helles;0.6112;;;;;LOCAL;default/Tap Craft Beer 0\,3L
+672;Tap 2 0,5L Weihnstephan Helles 110225;;;item;6.0;;Tap Craft Beer 0,5L;Tap 2 0,5L Weihnstephan Helles;1.0187;;;;;LOCAL;default/Tap Craft Beer 0\,5L
+673;Weihenstep. Helles 50l;;;item;0.0;;Kegs;Weihenstep. Helles 50l;101.8700;50.00000;VOLUME;;;LOCAL;
+674;Tap 1 0,3l Quellmalz - Sabine 190525;;;item;4.0;;Tap Craft Beer 0,3L;Tap 1 0,3l Quellmalz - Sabine;0.6600;;;;;LOCAL;
+675;Tap 1 0,5l Quellmalz - Sabine 190525;;;item;5.5;;Tap Craft Beer 0,5L;Tap 1 0,5l Quellmalz - Sabine;1.1000;;;;;LOCAL;
+682;Ostmost Cider 0,33l;;;item;4.5;;Ciders;Ostmost Cider 0,33l;1.3900;0.33000;VOLUME;;;LOCAL;
+683;Golden Pocket - mozzarella;;;combo;5.5;;Food;Golden Pocket - mozzarella;;;;;;LOCAL;
+684;Golden Pocket - Olives;;;combo;6.5;;Food;Golden Pocket - Olives;;;;;;LOCAL;
+685;Golden Pocket - Vegan;;;combo;6.5;;Food;Golden Pocket - Vegan;;;;;;LOCAL;
+687;Murphys Stout - 30l Fass;;;item;0.0;;Kegs;Murphys Stout - 30l Fass;100.2400;;;;;LOCAL;
+696;Tap 14 0,3l Hopscor - Beast 070325;;;item;6.0;;Tap Craft Beer 0,3L;Tap 14 0,3l Hopscor - Beast 070325;;;;;;LOCAL;
+697;Tap 14 0,5l Hopscor - Beast 070325;;;item;7.5;;Tap Craft Beer 0,5L;Tap 14 0,5l Hopscor - Beast 070325;;;;;;LOCAL;
+702;Guinness Fass 50l;;;item;0.0;;Kegs;Guinness 50l;164.3700;50.00000;VOLUME;;;LOCAL;
+715;Mampe NullNull;;;combo;4.5;;GIN;Mampe NullNull;;;;;;LOCAL;
+716;Berlin Mule;;;item;9.0;;Long Drinks;Berlin Mule;;;;;;LOCAL;
+718;Mampe Null Null - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Mampe Null Null 0,7l;15.2100;0.70000;VOLUME;;;LOCAL;
+719;Mampe Halb & Halb - 0,7l Flasche;;;item;0.0;;Spirit Bottles;Mampe Halb & Halb 0,7l;11.3300;0.70000;VOLUME;;;LOCAL;
+720;Tails Espresso Martini - 1l Flasche;;;item;0.0;;Spirit Bottles;Tails Espresso Martini 1l;17.9900;;;;;LOCAL;
+721;FT Mojito;;;item;10.0;;Cocktails;FT Mojito;;;;;;LOCAL;
+722;FT Alco Free Mojito;;;item;10.0;;Cocktails;FT Alco Free Mojito;;;;;;LOCAL;
+723;Twice - Schorle 0,33l;;;item;3.0;;Soft Drinks;Twice - Schorle 0,33l;0.8700;330.00000;VOLUME;;;LOCAL;
+724;Tap 6 0,3l Gorilla - Primavera Cero Porter 230425;;;item;7.9;;Tap Craft Beer 0,3L;Tap 6 0,3l Gorilla - Primavera Cero Porter 230425;;;;;;LOCAL;
+725;Tap 6 0,5l Gorilla - Primavera Cero Porter 230425;;;item;9.4;;Tap Craft Beer 0,5L;Tap 6 0,5l Gorilla - Primavera Cero Porter 230425;;;;;;LOCAL;
+726;Raummiete;;;item;;;Divers;Raummiete;;;;;;LOCAL;
+732;Pimms;;;item;8.0;;Long Drinks;Pimms;;;;;;LOCAL;
+733;Tap 11 0,3l Bräugier - Pacific Twist Pale 080525;;;item;3.7;;Tap Craft Beer 0,3L;Tap 11 0,3l Bräugier - Pacific Twist Pale 080525;;;;;;LOCAL;
+734;Tap 11 0,5l Bräugier - Pacific Twist Pale 080525;;;item;5.2;;Tap Craft Beer 0,5L;Tap 11 0,5l Bräugier - Pacific Twist Pale 080525;;;;;;LOCAL;
+735;Tap 12 0,3l Bräugier - Flucht aus Bayern 140525;;;item;3.5;;Tap Craft Beer 0,3L;Tap 12 0,3l Bräugier - Flucht aus Bayern 140525;;;;;;LOCAL;
+736;Tap 12 0,5l Bräugier - Flucht aus Bayern 140525;;;item;5.0;;Tap Craft Beer 0,5L;Tap 12 0,5l Bräugier - Flucht aus Bayern 140525;;;;;;LOCAL;
+737;Tyrell Kaiserweisse 0,75cl;;;item;35.0;;Alkohol;Tyrell Kaiserweisse 0,75cl;;;;;;LOCAL;
+738;Tyrell Kaffirweisse 0,75cl;;;item;35.0;;Alkohol;Tyrell Kaffirweisse 0,75cl;;;;;;LOCAL;
+739;French75;;;item;8.0;;Cocktails;French75;0.5500;;;;;LOCAL;
+740;FW Alco Free IPA 0,5l;;;item;7.5;;Alkohol;FW Alco Free IPA 0,5l;;;;;;LOCAL;
+741;Tap 10 0,3l Protokol - Josies on Vacation 210525;;;item;6.5;;Tap Craft Beer 0,3L;Tap 10 0,3l Protokol - Josies on Vacation 210525;;;;;;LOCAL;
+742;Tap 10 0,5l Protokol - Josies on Vacation 210525;;;item;8.0;;Tap Craft Beer 0,5L;Tap 10 0,5l Protokol - Josies on Vacation 210525;;;;;;LOCAL;
+743;OA - Dark Knight Pizza;;;combo;11.5;;Pizza;OA - Dark Knight Pizza;1.8191;;;;;LOCAL;default/
+744;OA - Funghi Pizza;;;combo;11.5;;Pizza;OA Funghi Pizza;1.8831;;;;;LOCAL;default/
+745;OA - Lady V (Vegan) Pizza;;;combo;11.5;;Pizza;OA - Lady V (Vegan) Pizza;2.1066;;;;;LOCAL;default/
+746;OA - Queen Margherita Pizza;;;combo;9.5;;Pizza;OA - Queen Margherita Pizza;1.6146;;;;;LOCAL;default/
+747;OA Sir PlantsAlot Pizza;;;combo;11.5;;Pizza;OA Sir PlantsAlot Pizza;2.3034;;;;;LOCAL;default/
+748;OA Royal Salami Pizza;;;combo;11.5;;Pizza;OA Royal Salami Pizza;2.0482;;;;;LOCAL;default/
+749;OA The Jester (Pepperoni) Pizza;;;combo;11.5;;Pizza;OA The Jester (Pepperoni) Pizza;2.1123;;;;;LOCAL;default/
+750;OA The Tower Spicy Pizza;;;combo;13.5;;Pizza;OA The Tower Spicy Pizza;2.2600;;;;;LOCAL;default/
+751;OA Nachos;;;combo;6.0;;Food;OA Nachos;1.1533;;;;;LOCAL;
+752;OA Vegan Nachos;;;combo;6.5;;Food;OA Vegan Nachos;1.5223;;;;;LOCAL;
+753;OA Wedges;;;combo;6.5;;Food;OA Wedges;0.8204;;;;;LOCAL;
+754;OA - Pringles Red;;;item;2.5;;Snacks-OA;OA - Pringles Red;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+755;Flat White;;;combo;3.5;;Coffee;Flat White;0.4000;;;;;LOCAL;default/
+756;Pringles Black;;;item;2.5;;Snacks;Pringles Black;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+757;OA - Pringles Green;;;item;2.5;;Snacks-OA;OA - Pringles Green;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+758;OA - Pringles Orange;;;item;2.5;;Snacks-OA;OA - Pringles Orange;0.7200;1.00000;DIMENSION_LESS;;;LOCAL;default/
+759;Ultje Nuts Salty;;;item;2.0;;Snacks;Ultje Nuts Salty;0.6500;1.00000;DIMENSION_LESS;;;LOCAL;default/
+761;OA - Blueberry Muffin;;;item;3.0;;Snacks-OA;OA - Blueberry Muffin;1.2600;1.00000;DIMENSION_LESS;;;LOCAL;default/
+762;OA - Chocolate Muffin;;;item;3.0;;Snacks-OA;OA - Chocolate Muffin;1.2600;1.00000;DIMENSION_LESS;;;LOCAL;default/
+763;OA - Donut Heart - Vegan;;;item;3.0;;Snacks-OA;OA - Donut Heart - Vegan;0.8300;52.00000;MASS;;;LOCAL;
+764;OA - John-John - Sea Salt & Black Pepper;;;item;2.5;;Snacks-OA;OA - John-John Crisps - Sea Salt & Black Pepper;0.7200;40.00000;MASS;;;LOCAL;
+765;OA - Soft Cookie;;;item;3.0;;Snacks-OA;OA - Soft Cookie;0.9300;75.00000;MASS;;;LOCAL;
+766;Brlo Cider - Wild Berries;;;item;4.5;;Ciders;Brlo Cider - Wild Berries;1.4500;0.33000;VOLUME;;;LOCAL;default/
