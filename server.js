@@ -225,9 +225,9 @@ async function initialize() {
 
 // Input validation middleware
 const validateWastageEntry = (req, res, next) => {
-  const { employeeName, itemName, quantity, unit, reason } = req.body;
+  const { employeeName, itemName, quantity, reason } = req.body;
   
-  if (!employeeName?.trim() || !itemName?.trim() || !quantity || !unit?.trim()) {
+  if (!employeeName?.trim() || !itemName?.trim() || !quantity) {
     return res.status(400).json({ 
       success: false, 
       error: 'Missing required fields' 
@@ -246,10 +246,10 @@ const validateWastageEntry = (req, res, next) => {
 
 // POST /api/entry — log a wastage entry
 app.post('/api/entry', validateWastageEntry, async (req, res) => {
-  const { employeeName, itemName, quantity, unit, reason } = req.body;
+  const { employeeName, itemName, quantity, reason } = req.body;
   
   try {
-    // First check if item exists
+    // First check if item exists and get its unit
     const itemCheck = await db.query(
       'SELECT unit FROM item_costs WHERE item_name = $1',
       [itemName]
@@ -262,11 +262,13 @@ app.post('/api/entry', validateWastageEntry, async (req, res) => {
       });
     }
 
-    // If validation passes, insert the entry
+    const itemUnit = itemCheck.rows[0].unit;
+
+    // If validation passes, insert the entry with the item's predefined unit
     await db.query(
       `INSERT INTO wastage_entries(employee_name, item_name, quantity, unit, reason)
        VALUES ($1,$2,$3,$4,$5)`,
-      [employeeName, itemName, quantity, unit, reason || null]
+      [employeeName, itemName, quantity, itemUnit, reason || null]
     );
     res.status(201).json({ success: true });
   } catch (err) {

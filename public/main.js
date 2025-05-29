@@ -4,7 +4,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const empList = document.getElementById('employee-list');
   const itemInput = document.getElementById('item');
   const itemList = document.getElementById('item-list');
-  const unitSelect = document.getElementById('unit');
   const reasonSelect = document.getElementById('reason-select');
   const reasonOther = document.getElementById('reason-other');
   const form = document.getElementById('wastage-form');
@@ -12,8 +11,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const submitBtn = form.querySelector('button[type="submit"]');
   const quantityInput = document.getElementById('quantity');
 
-  // Employee data (no Justina)
+  // Employee data
   const employees = ["Guy", "Dean", "Henry", "Bethany", "Pero", "Paddy", "Vaile", "Nora", "Melissa", "Josh"];
+
+  // Store items data globally
+  let itemsData = [];
 
   // Show message with type (success/error/info)
   function showMessage(text, type = 'info') {
@@ -28,130 +30,95 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Utility: setup autocomplete with improved matching
-  function setupAutocomplete(inputEl, listEl, data, onSelect) {
-    let currentIndex = -1;
-    let lastFilter = '';
+  // Setup autocomplete
+  function setupAutocomplete(input, list, options, onSelect) {
+    let currentFocus = -1;
 
-    function fuzzyMatch(str, pattern) {
-      const string = str.toLowerCase();
-      const search = pattern.toLowerCase();
-      let j = 0;
-      for (let i = 0; i < string.length && j < search.length; i++) {
-        if (string[i] === search[j]) {
-          j++;
-        }
-      }
-      return j === search.length;
-    }
+    input.addEventListener('input', () => {
+      const val = input.value.toLowerCase();
+      list.innerHTML = '';
+      list.style.display = 'none';
+      currentFocus = -1;
 
-    function updateList(filter) {
-      if (filter === lastFilter) return;
-      lastFilter = filter;
-      
-      listEl.innerHTML = '';
-      if (!filter.trim()) {
-        listEl.style.display = 'none';
-        return;
-      }
+      if (!val) return;
 
-      const matches = data
-        .filter(v => fuzzyMatch(v, filter))
-        .sort((a, b) => {
-          // Exact matches first, then startsWith, then contains
-          const aLower = a.toLowerCase();
-          const bLower = b.toLowerCase();
-          const filterLower = filter.toLowerCase();
+      const matches = options.filter(opt => 
+        opt.toLowerCase().includes(val)
+      );
+
+      if (matches.length > 0) {
+        list.style.display = 'block';
+        matches.forEach(match => {
+          const li = document.createElement('li');
+          // Highlight matching part
+          const matchIndex = match.toLowerCase().indexOf(val);
+          li.innerHTML = match.slice(0, matchIndex) +
+            '<strong>' + match.slice(matchIndex, matchIndex + val.length) + '</strong>' +
+            match.slice(matchIndex + val.length);
           
-          if (aLower === filterLower) return -1;
-          if (bLower === filterLower) return 1;
-          if (aLower.startsWith(filterLower) && !bLower.startsWith(filterLower)) return -1;
-          if (bLower.startsWith(filterLower) && !aLower.startsWith(filterLower)) return 1;
-          return a.localeCompare(b);
+          li.addEventListener('click', () => onSelect(match));
+          list.appendChild(li);
         });
-
-      matches.forEach(v => {
-        const li = document.createElement('li');
-        // Highlight matching part
-        const index = v.toLowerCase().indexOf(filter.toLowerCase());
-        if (index !== -1) {
-          const before = v.substring(0, index);
-          const match = v.substring(index, index + filter.length);
-          const after = v.substring(index + filter.length);
-          li.innerHTML = before + '<strong>' + match + '</strong>' + after;
-        } else {
-          li.textContent = v;
-        }
-        
-        li.addEventListener('mousedown', () => onSelect(v));
-        listEl.appendChild(li);
-      });
-
-      currentIndex = -1;
-      listEl.style.display = matches.length ? 'block' : 'none';
-    }
-
-    // Debounce input updates
-    let timeout;
-    inputEl.addEventListener('input', () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => updateList(inputEl.value), 150);
+      }
     });
 
-    inputEl.addEventListener('keydown', e => {
-      const items = listEl.querySelectorAll('li');
+    // Handle keyboard navigation
+    input.addEventListener('keydown', e => {
+      const items = list.getElementsByTagName('li');
       if (!items.length) return;
 
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (e.key === 'ArrowDown') {
+        currentFocus++;
+        if (currentFocus >= items.length) currentFocus = 0;
+        setActive(items);
         e.preventDefault();
-        if (e.key === 'ArrowDown') {
-          currentIndex = (currentIndex + 1) % items.length;
-        } else {
-          currentIndex = (currentIndex - 1 + items.length) % items.length;
-        }
-        items.forEach((li, i) => li.classList.toggle('highlight', i === currentIndex));
-        
-        // Scroll into view if needed
-        const highlighted = items[currentIndex];
-        if (highlighted) {
-          if (highlighted.offsetTop < listEl.scrollTop) {
-            listEl.scrollTop = highlighted.offsetTop;
-          } else if (highlighted.offsetTop + highlighted.offsetHeight > listEl.scrollTop + listEl.offsetHeight) {
-            listEl.scrollTop = highlighted.offsetTop + highlighted.offsetHeight - listEl.offsetHeight;
-          }
-        }
-      } else if (e.key === 'Enter' && currentIndex >= 0) {
+      }
+      else if (e.key === 'ArrowUp') {
+        currentFocus--;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        setActive(items);
         e.preventDefault();
-        onSelect(items[currentIndex].textContent);
-      } else if (e.key === 'Escape') {
-        listEl.style.display = 'none';
-        inputEl.blur();
+      }
+      else if (e.key === 'Enter' && currentFocus > -1) {
+        if (items[currentFocus]) {
+          onSelect(items[currentFocus].textContent);
+          e.preventDefault();
+        }
       }
     });
+
+    // Highlight active item
+    function setActive(items) {
+      if (!items) return false;
+      removeActive(items);
+      if (currentFocus >= items.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = items.length - 1;
+      items[currentFocus].classList.add('active');
+    }
+
+    function removeActive(items) {
+      for (let i = 0; i < items.length; i++) {
+        items[i].classList.remove('active');
+      }
+    }
 
     // Close list when clicking outside
     document.addEventListener('click', e => {
-      if (!inputEl.contains(e.target) && !listEl.contains(e.target)) {
-        listEl.style.display = 'none';
+      if (e.target !== input) {
+        list.style.display = 'none';
       }
-    });
-
-    // Mark as touched on blur for validation
-    inputEl.addEventListener('blur', () => {
-      inputEl.classList.add('touched');
     });
   }
 
-  // 1) Employee autocomplete
+  // Setup employee autocomplete
   setupAutocomplete(empInput, empList, employees, val => {
     empInput.value = val;
     empList.style.display = 'none';
     empInput.classList.add('touched');
   });
 
-  // 2) Fetch items & setup autocomplete
-  window.itemsData = [];
-  showMessage('Loading items...', 'info');
+  // Load items and setup autocomplete
+  showMessage('Loading items...');
   
   fetch('/api/items')
     .then(r => {
@@ -191,7 +158,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3) Toggle "Other" reason
+  // Toggle "Other" reason
   reasonSelect.addEventListener('change', () => {
     reasonSelect.classList.add('touched');
     if (reasonSelect.value === 'other') {
@@ -204,7 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 4) Form submit with validation
+  // Form submit with validation
   form.addEventListener('submit', async e => {
     e.preventDefault();
     msg.textContent = '';
@@ -219,7 +186,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Validate item
+    // Validate item and get its unit
     const selectedItem = itemsData.find(i => i.name === itemInput.value);
     if (!selectedItem) {
       showMessage('Please select a valid item from the list', 'error');
@@ -235,13 +202,6 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Validate unit is selected
-    if (!unitSelect.value) {
-      showMessage('Please select a unit', 'error');
-      unitSelect.focus();
-      return;
-    }
-
     const reason = reasonSelect.value === 'other' ? reasonOther.value.trim() : reasonSelect.value;
     if (reasonSelect.value === 'other' && !reason) {
       showMessage('Please provide a reason', 'error');
@@ -249,12 +209,12 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Prepare payload
+    // Prepare payload using the item's default unit
     const payload = {
       employeeName: empInput.value,
       itemName: itemInput.value,
       quantity: quantity,
-      unit: unitSelect.value,
+      unit: selectedItem.defaultUnit,
       reason: reason || null
     };
 
@@ -275,7 +235,6 @@ window.addEventListener('DOMContentLoaded', () => {
         showMessage('✅ Wastage logged successfully!', 'success');
         form.reset();
         formControls.forEach(control => control.classList.remove('touched'));
-        unitSelect.value = '';
         reasonOther.style.display = 'none';
       } else {
         showMessage(`❌ ${result.error || 'Failed to log wastage'}`, 'error');
@@ -296,18 +255,6 @@ window.addEventListener('DOMContentLoaded', () => {
     formControls.forEach(control => control.classList.remove('touched'));
     msg.textContent = '';
     msg.className = '';
-    unitSelect.value = '';
     reasonOther.style.display = 'none';
-  });
-
-  // Add item input clear handler
-  itemInput.addEventListener('input', () => {
-    if (!itemInput.value) {
-      // When item input is cleared, enable all unit options
-      Array.from(unitSelect.options).forEach(opt => {
-        opt.disabled = false;
-      });
-      unitSelect.value = '';
-    }
   });
 });
