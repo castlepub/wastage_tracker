@@ -1,0 +1,30 @@
+name: Update Items
+
+on:
+  push:
+    paths:
+      - 'data/updates/*.csv'  # Trigger when CSV files are added to this directory
+
+jobs:
+  update-items:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update stock levels
+        run: |
+          # Get the most recent CSV file
+          LATEST_CSV=$(ls -t data/updates/*.csv | head -n1)
+          if [ -f "$LATEST_CSV" ]; then
+            # Copy it to the main data directory
+            cp "$LATEST_CSV" data/stockLevels.csv
+            # Clean up the updates directory
+            rm data/updates/*.csv
+            
+            # Commit and push the changes
+            git config --global user.name 'GitHub Action'
+            git config --global user.email 'action@github.com'
+            git add data/stockLevels.csv
+            git commit -m "Update stock levels from $LATEST_CSV"
+            git push
+          fi 
