@@ -183,11 +183,45 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-// Connect to Postgres with connection timeout
+// Connect to Postgres with robust connection handling
 const db = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 5000
+  connectionTimeoutMillis: 5000,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  retryDelay: 3000, // Time between retries in milliseconds
+  maxRetries: 3 // Maximum number of retries per query
 });
+
+// Add error handler for the pool
+db.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
+});
+
+// Add connection error handler
+db.on('connect', (client) => {
+  client.on('error', (err) => {
+    console.error('Database client error:', err);
+  });
+});
+
+// Helper function to execute queries with retries
+async function executeQueryWithRetry(queryFn, maxRetries = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await queryFn();
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries) {
+        console.log(`Query attempt ${attempt} failed, retrying in 3 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+  }
+  throw lastError;
+}
 
 // Initialize database and start server
 async function initialize() {
@@ -244,16 +278,41 @@ const validateWastageEntry = (req, res, next) => {
   next();
 };
 
+// Error notification function
+async function notifyError(error, context) {
+  const errorTime = new Date().toISOString();
+  const errorMessage = `Error in ${context} at ${errorTime}:\n${error.message}\n${error.stack}`;
+  
+  try {
+    // Add to error log for daily report
+    if (!global.errorLog) {
+      global.errorLog = [];
+    }
+    global.errorLog.push({
+      timestamp: errorTime,
+      context,
+      error: error.message,
+      stack: error.stack
+    });
+
+    console.error(`[${errorTime}] ${context}:`, error);
+  } catch (notifyError) {
+    console.error('Error while logging error:', notifyError);
+  }
+}
+
 // POST /api/entry — log a wastage entry
 app.post('/api/entry', validateWastageEntry, async (req, res) => {
   const { employeeName, itemName, quantity, reason } = req.body;
   
   try {
     // First check if item exists and get its unit
-    const itemCheck = await db.query(
-      'SELECT unit FROM item_costs WHERE item_name = $1',
-      [itemName]
-    );
+    const itemCheck = await executeQueryWithRetry(async () => {
+      return await db.query(
+        'SELECT unit FROM item_costs WHERE item_name = $1',
+        [itemName]
+      );
+    });
 
     if (itemCheck.rows.length === 0) {
       return res.status(400).json({
@@ -265,28 +324,39 @@ app.post('/api/entry', validateWastageEntry, async (req, res) => {
     const itemUnit = itemCheck.rows[0].unit;
 
     // If validation passes, insert the entry with the item's predefined unit
-    await db.query(
-      `INSERT INTO wastage_entries(employee_name, item_name, quantity, unit, reason)
-       VALUES ($1,$2,$3,$4,$5)`,
-      [employeeName, itemName, quantity, itemUnit, reason || null]
-    );
+    await executeQueryWithRetry(async () => {
+      return await db.query(
+        `INSERT INTO wastage_entries(employee_name, item_name, quantity, unit, reason)
+         VALUES ($1,$2,$3,$4,$5)`,
+        [employeeName, itemName, quantity, itemUnit, reason || null]
+      );
+    });
     res.status(201).json({ success: true });
   } catch (err) {
-    console.error('Error logging wastage:', err);
-    res.status(500).json({ success: false, error: 'Failed to log wastage' });
+    await notifyError(err, '/api/entry endpoint');
+    res.status(500).json({ 
+      success: false, 
+      error: 'An error occurred while logging wastage. Please contact management if this issue persists.',
+      userMessage: true
+    });
   }
 });
 
 // GET /api/items — for autocomplete
 app.get('/api/items', async (_req, res) => {
   try {
-    const { rows } = await db.query(
-      'SELECT item_name AS name, unit AS defaultUnit FROM item_costs ORDER BY item_name'
-    );
+    const { rows } = await executeQueryWithRetry(async () => {
+      return await db.query(
+        'SELECT item_name AS name, unit AS defaultUnit FROM item_costs ORDER BY item_name'
+      );
+    });
     res.json(rows);
   } catch (err) {
-    console.error('Error fetching items:', err);
-    res.status(500).json({ error: 'Failed to fetch items' });
+    await notifyError(err, '/api/items endpoint');
+    res.status(500).json({ 
+      error: 'An error occurred while fetching items. Please contact management if this issue persists.',
+      userMessage: true 
+    });
   }
 });
 
@@ -326,6 +396,69 @@ app.get('/api/entries', async (req, res) => {
   } catch (err) {
     console.error('Error fetching entries:', err);
     res.status(500).json({ error: 'Failed to fetch entries' });
+  }
+});
+
+// POST /api/suggest-item — suggest a new item
+app.post('/api/suggest-item', async (req, res) => {
+  const { itemName, unit } = req.body;
+  
+  try {
+    // Validate input
+    if (!itemName?.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Item name is required' 
+      });
+    }
+
+    if (!unit?.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Unit is required' 
+      });
+    }
+
+    // Check if item already exists
+    const existingItem = await executeQueryWithRetry(async () => {
+      return await db.query(
+        'SELECT item_name FROM item_costs WHERE item_name = $1',
+        [itemName.trim()]
+      );
+    });
+
+    if (existingItem.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'This item already exists'
+      });
+    }
+
+    // Insert new item with a default cost of 0 (to be updated by management)
+    await executeQueryWithRetry(async () => {
+      return await db.query(
+        'INSERT INTO item_costs (item_name, unit_cost, unit) VALUES ($1, $2, $3)',
+        [itemName.trim(), 0, unit.trim()]
+      );
+    });
+
+    // Add to error log to notify management
+    await notifyError(
+      { message: `New item suggested: ${itemName} (${unit})` },
+      'Item Suggestion'
+    );
+
+    res.status(201).json({ 
+      success: true,
+      message: 'Item suggestion submitted successfully. Management will review and update the cost.'
+    });
+  } catch (err) {
+    await notifyError(err, '/api/suggest-item endpoint');
+    res.status(500).json({ 
+      success: false, 
+      error: 'An error occurred while submitting the item suggestion. Please contact management if this issue persists.',
+      userMessage: true
+    });
   }
 });
 

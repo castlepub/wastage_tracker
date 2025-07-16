@@ -164,6 +164,92 @@
       background: rgba(217, 48, 37, 0.04) !important;
     }
 
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: #202124;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-buttons .cancel {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: #5f6368;
+    }
+
+    .modal-buttons .submit {
+      background: var(--primary-color);
+      border: none;
+      color: white;
+    }
+
+    .modal-buttons button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Add item button */
+    .add-item-button {
+      background: transparent;
+      border: none;
+      color: var(--primary-color);
+      padding: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      position: absolute;
+      right: 0;
+      top: 0;
+      display: none;
+    }
+
+    .add-item-button:hover {
+      text-decoration: underline;
+    }
+
+    .autocomplete:hover .add-item-button {
+      display: block;
+    }
+
     #message {
       text-align: center;
       margin-top: 1rem;
@@ -218,6 +304,7 @@
         <label for="item">Item</label>
         <div class="autocomplete">
           <input type="text" id="item" class="form-control" placeholder="Start typing item name..." autocomplete="off" />
+          <button type="button" class="add-item-button" id="add-item-btn">+ Add New Item</button>
           <ul id="item-list" class="datalist"></ul>
         </div>
       </div>
@@ -245,6 +332,38 @@
     </form>
     <div id="message"></div>
   </div>
+
+    <!-- New Item Modal -->
+    <div id="new-item-modal" class="modal">
+      <div class="modal-content">
+        <h2>Suggest New Item</h2>
+        <form id="new-item-form">
+          <div class="form-group">
+            <label for="new-item-name">Item Name</label>
+            <input type="text" id="new-item-name" class="form-control" required placeholder="Enter item name" />
+          </div>
+          <div class="form-group">
+            <label for="new-item-unit">Unit</label>
+            <select id="new-item-unit" class="form-control" required>
+              <option value="">Select unit...</option>
+              <option value="UNIT">Unit</option>
+              <option value="KG">Kilogram</option>
+              <option value="L">Liter</option>
+              <option value="ML">Milliliter</option>
+              <option value="G">Gram</option>
+              <option value="BOX">Box</option>
+              <option value="BOTTLE">Bottle</option>
+              <option value="CAN">Can</option>
+            </select>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="cancel" id="cancel-new-item">Cancel</button>
+            <button type="submit" class="submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   <script src="main.js"></script>
 </body>
 </html>

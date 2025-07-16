@@ -30,6 +30,80 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // New Item Modal functionality
+  const newItemModal = document.getElementById('new-item-modal');
+  const newItemForm = document.getElementById('new-item-form');
+  const addItemBtn = document.getElementById('add-item-btn');
+  const cancelNewItemBtn = document.getElementById('cancel-new-item');
+  const newItemNameInput = document.getElementById('new-item-name');
+  const newItemUnitSelect = document.getElementById('new-item-unit');
+
+  // Show modal
+  addItemBtn.addEventListener('click', () => {
+    newItemModal.classList.add('show');
+    newItemNameInput.value = itemInput.value; // Pre-fill with current input
+    newItemNameInput.focus();
+  });
+
+  // Hide modal
+  function hideNewItemModal() {
+    newItemModal.classList.remove('show');
+    newItemForm.reset();
+  }
+
+  cancelNewItemBtn.addEventListener('click', hideNewItemModal);
+
+  // Close modal when clicking outside
+  newItemModal.addEventListener('click', (e) => {
+    if (e.target === newItemModal) {
+      hideNewItemModal();
+    }
+  });
+
+  // Handle new item submission
+  newItemForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = newItemForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+      const response = await fetch('/api/suggest-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemName: newItemNameInput.value.trim(),
+          unit: newItemUnitSelect.value
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showMessage('✅ ' + result.message, 'success');
+        hideNewItemModal();
+        
+        // Add the new item to the items list
+        const newItem = {
+          name: newItemNameInput.value.trim(),
+          defaultUnit: newItemUnitSelect.value
+        };
+        itemsData.push(newItem);
+        
+        // Update the item input
+        itemInput.value = newItem.name;
+        itemInput.classList.add('touched');
+      } else {
+        showMessage('❌ ' + (result.error || 'Failed to submit item'), 'error');
+      }
+    } catch (err) {
+      console.error('Network error:', err);
+      showMessage('❌ Network error. Please try again.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
   // Setup autocomplete
   function setupAutocomplete(input, list, options, onSelect) {
     let currentFocus = -1;
