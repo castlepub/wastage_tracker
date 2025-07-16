@@ -192,12 +192,14 @@ const RECONNECT_DELAY = 5000; // 5 seconds
 async function createPool() {
   return new Pool({ 
     connectionString: process.env.DATABASE_URL,
-    connectionTimeoutMillis: 5000,
-    max: 20,
-    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000, // Increased from 5000
+    max: 10, // Reduced from 20 to prevent connection exhaustion
+    idleTimeoutMillis: 60000, // Increased from 30000
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    retryDelay: 3000,
-    maxRetries: 3
+    retryDelay: 1000, // Reduced from 3000 for faster retries
+    maxRetries: 5, // Increased from 3
+    keepAlive: true, // Enable TCP keepalive
+    keepAliveInitialDelayMillis: 10000 // Initial delay before keepalive
   });
 }
 
@@ -211,8 +213,9 @@ async function setupDatabase(attempt = 1) {
     // Create a new pool
     db = await createPool();
 
-    // Test the connection
+    // Test the connection with a simple query
     const client = await db.connect();
+    await client.query('SELECT 1');
     console.log('✅ Database connection successful');
     client.release();
 
@@ -224,6 +227,13 @@ async function setupDatabase(attempt = 1) {
       }
     });
 
+    // Add connection pool error handler
+    db.on('connect', (client) => {
+      client.on('error', (err) => {
+        console.error('Client connection error:', err);
+      });
+    });
+
     isConnecting = false;
     return true;
   } catch (err) {
@@ -231,8 +241,9 @@ async function setupDatabase(attempt = 1) {
     
     if (attempt < MAX_RECONNECT_ATTEMPTS) {
       isConnecting = false;
-      console.log(`Retrying in ${RECONNECT_DELAY/1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY));
+      const delay = Math.min(RECONNECT_DELAY * attempt, 30000); // Exponential backoff with 30s max
+      console.log(`Retrying in ${delay/1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
       return setupDatabase(attempt + 1);
     } else {
       isConnecting = false;
@@ -310,9 +321,32 @@ async function initialize() {
           reason TEXT,
           timestamp TIMESTAMPTZ DEFAULT NOW()
         );
+
+        CREATE TABLE IF NOT EXISTS item_costs (
+          id SERIAL PRIMARY KEY,
+          item_name TEXT NOT NULL UNIQUE,
+          unit_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+          unit TEXT NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS menu_items (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          price DECIMAL(10,2) NOT NULL,
+          description TEXT,
+          is_available BOOLEAN DEFAULT true,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS menu_items_category_idx ON menu_items(category);
+        CREATE INDEX IF NOT EXISTS menu_items_availability_idx ON menu_items(is_available);
       `);
     });
-    console.log('✅ wastage_entries table ready');
+    console.log('✅ Database tables ready');
 
     // 3. Seed costs data
     await seedCosts(db);
@@ -710,7 +744,28 @@ app.get('/health', async (req, res) => {
 });
 
 // Health check
-app.get('/', (_req, res) => res.send('OK'));
+app.get('/', async (req, res) => {
+  try {
+    // Test database connection
+    const client = await db.connect();
+    await client.query('SELECT 1'); // Simple query to verify connection
+    client.release();
+    
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (err) {
+    console.error('Health check failed:', err);
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      database: 'disconnected',
+      error: err.message
+    });
+  }
+});
 
 // Add error handling for uncaught exceptions
 process.on('uncaughtException', (err) => {
