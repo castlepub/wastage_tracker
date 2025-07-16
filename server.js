@@ -183,66 +183,135 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-// Connect to Postgres with robust connection handling
-const db = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 5000,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  retryDelay: 3000, // Time between retries in milliseconds
-  maxRetries: 3 // Maximum number of retries per query
-});
+// Database connection management
+let db = null;
+let isConnecting = false;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY = 5000; // 5 seconds
 
-// Add error handler for the pool
-db.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-});
-
-// Add connection error handler
-db.on('connect', (client) => {
-  client.on('error', (err) => {
-    console.error('Database client error:', err);
+async function createPool() {
+  return new Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    connectionTimeoutMillis: 5000,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    retryDelay: 3000,
+    maxRetries: 3
   });
-});
+}
 
-// Helper function to execute queries with retries
+async function setupDatabase(attempt = 1) {
+  if (isConnecting) return;
+  isConnecting = true;
+
+  try {
+    console.log(`Attempting database connection (attempt ${attempt}/${MAX_RECONNECT_ATTEMPTS})...`);
+    
+    // Create a new pool
+    db = await createPool();
+
+    // Test the connection
+    const client = await db.connect();
+    console.log('✅ Database connection successful');
+    client.release();
+
+    // Set up error handlers
+    db.on('error', async (err) => {
+      console.error('Unexpected database error:', err);
+      if (!isConnecting) {
+        await reconnectDatabase();
+      }
+    });
+
+    isConnecting = false;
+    return true;
+  } catch (err) {
+    console.error(`Database connection attempt ${attempt} failed:`, err);
+    
+    if (attempt < MAX_RECONNECT_ATTEMPTS) {
+      isConnecting = false;
+      console.log(`Retrying in ${RECONNECT_DELAY/1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY));
+      return setupDatabase(attempt + 1);
+    } else {
+      isConnecting = false;
+      throw new Error(`Failed to connect to database after ${MAX_RECONNECT_ATTEMPTS} attempts`);
+    }
+  }
+}
+
+async function reconnectDatabase() {
+  console.log('Attempting to reconnect to database...');
+  
+  try {
+    // Close existing pool if it exists
+    if (db) {
+      await db.end();
+    }
+    
+    // Setup new connection
+    await setupDatabase();
+    console.log('Database reconnection successful');
+  } catch (err) {
+    console.error('Database reconnection failed:', err);
+  }
+}
+
+// Helper function to execute queries with retries and connection checks
 async function executeQueryWithRetry(queryFn, maxRetries = 3) {
   let lastError;
+  
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      // Check if we have a valid pool
+      if (!db) {
+        await setupDatabase();
+      }
+      
+      // Try to execute the query
       return await queryFn();
     } catch (error) {
       lastError = error;
+      console.error(`Query attempt ${attempt} failed:`, error);
+
+      // Check if it's a connection error
+      if (error.code === 'ECONNREFUSED' || error.code === '57P01' || error.code === '57P03') {
+        console.log('Connection error detected, attempting to reconnect...');
+        await reconnectDatabase();
+      }
+
       if (attempt < maxRetries) {
-        console.log(`Query attempt ${attempt} failed, retrying in 3 seconds...`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        const delay = attempt * 3000; // Increasing delay with each attempt
+        console.log(`Retrying in ${delay/1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
+  
   throw lastError;
 }
 
 // Initialize database and start server
 async function initialize() {
   try {
-    // 1. Test database connection
-    const client = await db.connect();
-    console.log('✅ Database connection successful');
-    client.release();
+    // 1. Setup database connection
+    await setupDatabase();
 
     // 2. Ensure tables exist
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS wastage_entries (
-        id SERIAL PRIMARY KEY,
-        employee_name TEXT NOT NULL,
-        item_name TEXT NOT NULL,
-        quantity REAL NOT NULL,
-        unit TEXT NOT NULL,
-        reason TEXT,
-        timestamp TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
+    await executeQueryWithRetry(async () => {
+      return await db.query(`
+        CREATE TABLE IF NOT EXISTS wastage_entries (
+          id SERIAL PRIMARY KEY,
+          employee_name TEXT NOT NULL,
+          item_name TEXT NOT NULL,
+          quantity REAL NOT NULL,
+          unit TEXT NOT NULL,
+          reason TEXT,
+          timestamp TIMESTAMPTZ DEFAULT NOW()
+        );
+      `);
+    });
     console.log('✅ wastage_entries table ready');
 
     // 3. Seed costs data
