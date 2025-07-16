@@ -163,6 +163,10 @@ async function generateReport() {
           .summary { background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
           .summary p { margin: 10px 0; }
           .cost { color: #d35400; font-weight: bold; }
+          .error-section { background: #fee; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          .error-section h3 { color: #c0392b; margin-top: 0; }
+          .new-items-section { background: #e8f5e9; padding: 20px; border-radius: 5px; margin: 20px 0; }
+          .new-items-section h3 { color: #2e7d32; margin-top: 0; }
           table { width: 100%; border-collapse: collapse; margin-top: 20px; }
           th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
           td { padding: 10px; border-bottom: 1px solid #ddd; }
@@ -176,6 +180,57 @@ async function generateReport() {
             <h1>The Castle Berlin</h1>
             <h2>Daily Wastage Report</h2>
           </div>
+          
+          ${global.newItemLog && global.newItemLog.length > 0 ? `
+          <div class="new-items-section">
+            <h3>🆕 New Items Added</h3>
+            <p>The following items were added and need cost values to be set:</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Item Name</th>
+                  <th>Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${global.newItemLog.map(item => `
+                  <tr>
+                    <td>${dayjs(item.timestamp).format('HH:mm:ss')}</td>
+                    <td>${item.itemName}</td>
+                    <td>${item.unit}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <p style="margin-top: 15px; color: #2e7d32;"><strong>Action Required:</strong> Please update the cost values for these items.</p>
+          </div>
+          ` : ''}
+          
+          ${global.errorLog && global.errorLog.length > 0 ? `
+          <div class="error-section">
+            <h3>⚠️ System Errors</h3>
+            <p>The following errors occurred in the last 24 hours:</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Context</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${global.errorLog.map(error => `
+                  <tr>
+                    <td>${dayjs(error.timestamp).format('HH:mm:ss')}</td>
+                    <td>${error.context}</td>
+                    <td>${error.error}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : ''}
           
           <div class="summary">
             <p><strong>Period:</strong> ${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')} UTC</p>

@@ -278,6 +278,14 @@ const validateWastageEntry = (req, res, next) => {
   next();
 };
 
+// Initialize global logs
+if (!global.errorLog) {
+  global.errorLog = [];
+}
+if (!global.newItemLog) {
+  global.newItemLog = [];
+}
+
 // Error notification function
 async function notifyError(error, context) {
   const errorTime = new Date().toISOString();
@@ -285,9 +293,6 @@ async function notifyError(error, context) {
   
   try {
     // Add to error log for daily report
-    if (!global.errorLog) {
-      global.errorLog = [];
-    }
     global.errorLog.push({
       timestamp: errorTime,
       context,
@@ -298,6 +303,24 @@ async function notifyError(error, context) {
     console.error(`[${errorTime}] ${context}:`, error);
   } catch (notifyError) {
     console.error('Error while logging error:', notifyError);
+  }
+}
+
+// New item notification function
+async function notifyNewItem(itemName, unit) {
+  const timestamp = new Date().toISOString();
+  
+  try {
+    // Add to new item log for daily report
+    global.newItemLog.push({
+      timestamp,
+      itemName,
+      unit
+    });
+
+    console.log(`[${timestamp}] New item suggested: ${itemName} (${unit})`);
+  } catch (notifyError) {
+    console.error('Error while logging new item:', notifyError);
   }
 }
 
@@ -442,11 +465,8 @@ app.post('/api/suggest-item', async (req, res) => {
       );
     });
 
-    // Add to error log to notify management
-    await notifyError(
-      { message: `New item suggested: ${itemName} (${unit})` },
-      'Item Suggestion'
-    );
+    // Log the new item
+    await notifyNewItem(itemName.trim(), unit.trim());
 
     res.status(201).json({ 
       success: true,
