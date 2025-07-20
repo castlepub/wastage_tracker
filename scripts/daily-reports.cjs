@@ -23,13 +23,18 @@ if (!GMAIL_APP_PASSWORD) {
   process.exit(1);
 }
 
-// Create email transporter
+// Create email transporter with explicit settings
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  requireTLS: true,
   auth: {
     user: GMAIL_USER,
     pass: GMAIL_APP_PASSWORD
-  }
+  },
+  logger: true,
+  debug: true // include SMTP traffic in the logs
 });
 
 // Helper function to sleep
