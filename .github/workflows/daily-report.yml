@@ -22,6 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci
+        npm install resend
         echo "Checking scripts directory:"
         ls -la scripts/
         echo "Verifying daily-reports.cjs exists:"
