@@ -107,6 +107,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Setup autocomplete
   function setupAutocomplete(input, list, options, onSelect) {
     let currentFocus = -1;
+    const addItemBtn = document.getElementById('add-item-btn');
 
     input.addEventListener('input', () => {
       const val = input.value.toLowerCase();
@@ -114,11 +115,18 @@ window.addEventListener('DOMContentLoaded', () => {
       list.style.display = 'none';
       currentFocus = -1;
 
-      if (!val) return;
+      if (!val) {
+        addItemBtn.style.display = 'none';
+        return;
+      }
 
       const matches = options.filter(opt => 
         opt.toLowerCase().includes(val)
       );
+
+      // Show the add button only if there are no exact matches
+      const hasExactMatch = matches.some(match => match.toLowerCase() === val);
+      addItemBtn.style.display = hasExactMatch ? 'none' : 'block';
 
       if (matches.length > 0) {
         list.style.display = 'block';
@@ -130,11 +138,19 @@ window.addEventListener('DOMContentLoaded', () => {
             '<strong>' + match.slice(matchIndex, matchIndex + val.length) + '</strong>' +
             match.slice(matchIndex + val.length);
           
-          li.addEventListener('click', () => onSelect(match));
+          li.addEventListener('click', () => {
+            onSelect(match);
+            addItemBtn.style.display = 'none';
+          });
           list.appendChild(li);
         });
+      } else {
+        list.style.display = 'none';
       }
     });
+
+    // Hide add button initially
+    addItemBtn.style.display = 'none';
 
     // Handle keyboard navigation
     input.addEventListener('keydown', e => {
@@ -156,6 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
       else if (e.key === 'Enter' && currentFocus > -1) {
         if (items[currentFocus]) {
           onSelect(items[currentFocus].textContent);
+          addItemBtn.style.display = 'none';
           e.preventDefault();
         }
       }

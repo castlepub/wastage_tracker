@@ -22,11 +22,27 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Send email report
+    - name: Generate report
       env:
-        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
         APP_URL: ${{ secrets.APP_URL }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "Sending daily report..."
-        node scripts/email-report.js
+        echo "Generating daily report..."
+        node scripts/daily-reports.cjs > report.txt
+
+    - name: Create Issue with Report
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const reportContent = fs.readFileSync('report.txt', 'utf8');
+          const today = new Date().toISOString().split('T')[0];
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Daily Wastage Report - ${today}`,
+            body: '```\n' + reportContent + '\n```',
+            labels: ['report', 'automated']
+          });

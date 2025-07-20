@@ -231,33 +231,31 @@
     /* Add item button */
     .add-item-button {
       background: transparent;
-      border: 1px solid var(--primary-color);
+      border: none;
       color: var(--primary-color);
-      padding: 0.5rem 1rem;
+      padding: 0.5rem;
       cursor: pointer;
       font-size: 0.9rem;
       position: absolute;
       right: 8px;
       top: 50%;
       transform: translateY(-50%);
-      border-radius: 4px;
-      display: block;
+      display: none;
       z-index: 2;
     }
 
     .add-item-button:hover {
-      background: var(--primary-color);
-      color: white;
+      text-decoration: underline;
     }
 
-    /* Remove the hover-only display */
+    /* Remove the hover-only display since we handle it in JS */
     .autocomplete:hover .add-item-button {
-      display: block;
+      display: none;
     }
 
-    /* Adjust input padding to make room for button */
+    /* Adjust input padding to make room for button when it shows */
     .autocomplete input.form-control {
-      padding-right: 120px;
+      padding-right: 100px;
     }
 
     #message {
