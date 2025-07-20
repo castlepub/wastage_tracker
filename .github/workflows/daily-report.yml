@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  send-report:
+  generate-report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -20,15 +20,18 @@ jobs:
         node-version: '18'
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        npm ci
+        ls -la scripts/
 
     - name: Generate report
       env:
         APP_URL: ${{ secrets.APP_URL }}
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
-        echo "Generating daily report..."
+        echo "Running daily reports script..."
         node scripts/daily-reports.cjs > report.txt
+        cat report.txt
 
     - name: Create Issue with Report
       if: success()
