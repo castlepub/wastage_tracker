@@ -1,4 +1,4 @@
-name: Daily Report Generator
+name: Daily Wastage Report
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  generate-report:
+  send-report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -24,44 +24,15 @@ jobs:
         npm ci
         echo "Checking scripts directory:"
         ls -la scripts/
-        echo "Verifying daily-reports.cjs exists:"
-        test -f scripts/daily-reports.cjs || exit 1
+        echo "Verifying email-report.js exists:"
+        test -f scripts/email-report.js || exit 1
 
-    - name: Remove old script if it exists
-      run: |
-        rm -f scripts/email-report.js || true
-        echo "Remaining scripts:"
-        ls -la scripts/
-
-    - name: Generate report
+    - name: Send email report
       env:
+        RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        REPORT_EMAIL: 'thecastle.orders@gmail.com'
         APP_URL: ${{ secrets.APP_URL }}
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
-        echo "Running daily reports script..."
-        if [ ! -f "scripts/daily-reports.cjs" ]; then
-          echo "Error: daily-reports.cjs not found!"
-          ls -la scripts/
-          exit 1
-        fi
-        node scripts/daily-reports.cjs > report.txt
-        echo "Report generated. Content:"
-        cat report.txt
-
-    - name: Create Issue with Report
-      if: success()
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const fs = require('fs');
-          const reportContent = fs.readFileSync('report.txt', 'utf8');
-          const today = new Date().toISOString().split('T')[0];
-          
-          await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `Daily Wastage Report - ${today}`,
-            body: '```\n' + reportContent + '\n```',
-            labels: ['report', 'automated']
-          });
+        echo "Sending daily report..."
+        node scripts/email-report.js
