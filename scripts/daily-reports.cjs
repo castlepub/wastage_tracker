@@ -13,7 +13,7 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault('UTC');
 
 // Configure email
-const GMAIL_USER = 'thecastle.orders@gmail.com';
+const GMAIL_USER = 'thecastlereports@gmail.com';
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 const REPORT_EMAIL = process.env.REPORT_EMAIL || 'thecastle.orders@gmail.com';
 const DEFAULT_URL = 'https://wastagetracker-production.up.railway.app';
