@@ -31,7 +31,7 @@ jobs:
     - name: Send email report
       env:
         RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        REPORT_EMAIL: 'thecastle.orders@gmail.com'
+        REPORT_EMAIL: 'castlepubberlin@gmail.com'
         APP_URL: ${{ secrets.APP_URL }}
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
