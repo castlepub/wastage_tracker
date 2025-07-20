@@ -82,14 +82,21 @@ async function fetchWithRetries(url, options = {}, maxRetries = 3, initialDelay 
 
 async function generateReport() {
   try {
-    // Calculate time window - for yesterday's report
-    const now = dayjs().utc();
-    const today6AM = now.startOf('day').add(6, 'hour');
-    const yesterday6AM = today6AM.subtract(24, 'hour');
+    // Calculate time window based on input date or default to yesterday
+    let startDate;
+    if (process.env.REPORT_DATE) {
+      // If a date is provided, use it
+      startDate = dayjs.utc(process.env.REPORT_DATE).startOf('day').add(6, 'hour');
+    } else {
+      // Default to yesterday 6 AM UTC
+      const now = dayjs().utc();
+      const today6AM = now.startOf('day').add(6, 'hour');
+      startDate = now.isBefore(today6AM) 
+        ? today6AM.subtract(24, 'hour')
+        : today6AM;
+    }
     
-    // Always report on the previous day's data
-    const startDate = yesterday6AM;
-    const endDate = today6AM;
+    const endDate = startDate.add(24, 'hour');
 
     console.log('\nGenerating report for period:');
     console.log('From:', startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
@@ -100,6 +107,7 @@ async function generateReport() {
     console.log('- APP_URL:', process.env.APP_URL || '(not set)');
     console.log('- REPORT_EMAIL:', process.env.REPORT_EMAIL ? '(set)' : '(not set)');
     console.log('- GMAIL_APP_PASSWORD:', process.env.GMAIL_APP_PASSWORD ? '(set)' : '(not set)');
+    console.log('- REPORT_DATE:', process.env.REPORT_DATE || '(not set, using yesterday)');
 
     // Construct base URL
     let baseUrl = process.env.APP_URL;
