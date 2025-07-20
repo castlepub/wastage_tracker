@@ -25,7 +25,6 @@ jobs:
     - name: Generate report
       env:
         APP_URL: ${{ secrets.APP_URL }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
         echo "Generating daily report..."

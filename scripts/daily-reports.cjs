@@ -78,8 +78,14 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const config = {
   now: dayjs().utc(),
   BASE_URL: process.env.APP_URL || 'https://wastagetracker-production.up.railway.app',
-  DROPBOX_TOKEN: process.env.DROPBOX_TOKEN
+  EXPORT_TOKEN: process.env.EXPORT_TOKEN
 };
+
+// Validate required environment variables
+if (!config.EXPORT_TOKEN) {
+  error('❌ EXPORT_TOKEN environment variable is required');
+  process.exit(1);
+}
 
 // Calculate time window
 const today6AM = config.now.startOf('day').add(6, 'hour');
@@ -92,8 +98,7 @@ config.endDate = config.startDate.add(24, 'hour');
 log('\n=== Startup Information ===');
 log('Current time (UTC):', config.now.format('YYYY-MM-DD HH:mm:ss'));
 log('API URL:', config.BASE_URL);
-log('Health URL:', `${config.BASE_URL}/health`);
-log('Dropbox enabled:', !!config.DROPBOX_TOKEN);
+log('Export token:', config.EXPORT_TOKEN ? '(set)' : '(not set)');
 
 log('\nFetching entries for the period:');
 log('From:', config.startDate.format('YYYY-MM-DD HH:mm'), 'UTC');
@@ -129,15 +134,18 @@ async function loggedFetch(url, options = {}) {
   log('URL:', url);
   log('Method:', options.method || 'GET');
   
-  // Add authorization header if EXPORT_TOKEN is available
-  if (process.env.EXPORT_TOKEN) {
-    options.headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${process.env.EXPORT_TOKEN}`
-    };
-  }
+  // Add authorization header
+  options.headers = {
+    ...options.headers,
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${config.EXPORT_TOKEN}`
+  };
   
-  log('Headers:', {...options.headers, Authorization: options.headers?.Authorization ? '(set)' : '(not set)'});
+  log('Headers:', {
+    ...options.headers,
+    Authorization: '(set)'
+  });
   
   try {
     log('Starting request...');
@@ -145,7 +153,6 @@ async function loggedFetch(url, options = {}) {
     log('Response received:');
     log('Status:', response.status);
     log('Status text:', response.statusText);
-    log('Headers:', Object.fromEntries([...response.headers]));
     
     // Try to get response body
     let body;
