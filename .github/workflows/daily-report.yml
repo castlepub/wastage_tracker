@@ -1,4 +1,4 @@
-name: Daily Wastage Report
+name: Daily Report Generator
 
 on:
   schedule:
