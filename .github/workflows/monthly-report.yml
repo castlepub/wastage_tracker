@@ -3,12 +3,12 @@ name: Monthly Wastage Report
 on:
   schedule:
     - cron: '0 6 1 * *'  # Run at 6 AM UTC on the first day of each month
-  workflow_dispatch:  # Allow manual triggers
+  workflow_dispatch:
 
 jobs:
-  send-report:
+  generate-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Increased timeout for larger data sets
+    timeout-minutes: 5
 
     steps:
     - name: Checkout repo
@@ -20,13 +20,33 @@ jobs:
         node-version: '18'
 
     - name: Install dependencies
-      run: npm install
-
-    - name: Send monthly report
-      env:
-        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-        REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
-        APP_URL: ${{ secrets.APP_URL }}
       run: |
-        echo "Sending monthly report..."
-        node scripts/monthly-report.js 
+        npm ci
+        ls -la scripts/
+
+    - name: Generate report
+      env:
+        APP_URL: ${{ secrets.APP_URL }}
+        EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
+      run: |
+        echo "Running monthly report script..."
+        node scripts/monthly-report.js > report.txt
+        cat report.txt
+
+    - name: Create Issue with Report
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const reportContent = fs.readFileSync('report.txt', 'utf8');
+          const today = new Date().toISOString().split('T')[0];
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Monthly Wastage Report - ${today}`,
+            body: '```\n' + reportContent + '\n```',
+            labels: ['report', 'monthly', 'automated']
+          }); 
