@@ -22,6 +22,15 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci
+        echo "Checking scripts directory:"
+        ls -la scripts/
+        echo "Verifying daily-reports.cjs exists:"
+        test -f scripts/daily-reports.cjs || exit 1
+
+    - name: Remove old script if it exists
+      run: |
+        rm -f scripts/email-report.js || true
+        echo "Remaining scripts:"
         ls -la scripts/
 
     - name: Generate report
@@ -30,7 +39,13 @@ jobs:
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
         echo "Running daily reports script..."
+        if [ ! -f "scripts/daily-reports.cjs" ]; then
+          echo "Error: daily-reports.cjs not found!"
+          ls -la scripts/
+          exit 1
+        fi
         node scripts/daily-reports.cjs > report.txt
+        echo "Report generated. Content:"
         cat report.txt
 
     - name: Create Issue with Report
