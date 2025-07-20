@@ -24,8 +24,8 @@ jobs:
         npm ci
         echo "Checking scripts directory:"
         ls -la scripts/
-        echo "Verifying email-report.js exists:"
-        test -f scripts/email-report.js || exit 1
+        echo "Verifying daily-reports.cjs exists:"
+        test -f scripts/daily-reports.cjs || exit 1
 
     - name: Send email report
       env:
@@ -35,4 +35,4 @@ jobs:
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
       run: |
         echo "Sending daily report..."
-        node scripts/email-report.js
+        node scripts/daily-reports.cjs

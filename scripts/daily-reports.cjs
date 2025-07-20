@@ -9,6 +9,9 @@ const error = (msg, ...args) => {
   process.stderr.write(util.format(msg, ...args) + '\n');
 };
 
+// Add Resend import at the top
+const { Resend } = require('resend');
+
 // Immediate logging to debug script startup
 log('\n=== SCRIPT EXECUTION STARTED ===');
 log('Process ID:', process.pid);
@@ -332,6 +335,32 @@ async function main() {
       log('\n⚠️ Skipping Dropbox upload (no token provided)');
       log('CSV content that would have been uploaded:');
       log(csvContent);
+    }
+
+    // Initialize Resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    // After generating the report content, send via Resend
+    const emailData = {
+      from: 'onboarding@resend.dev',
+      to: process.env.REPORT_EMAIL,
+      subject: `Daily Wastage Report - ${config.startDate.format('DD.MM.YYYY')}`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: `wastage-report-${config.startDate.format('YYYY-MM-DD')}.csv`,
+          content: Buffer.from(csvContent).toString('base64'),
+          type: 'text/csv'
+        }
+      ]
+    };
+
+    try {
+      const response = await resend.emails.send(emailData);
+      log('Email sent successfully:', response);
+    } catch (err) {
+      error('Failed to send email:', err);
+      process.exit(1);
     }
   } catch (err) {
     // Log the full error for debugging
