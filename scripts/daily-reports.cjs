@@ -128,7 +128,16 @@ async function loggedFetch(url, options = {}) {
   log('\n=== Making HTTP Request ===');
   log('URL:', url);
   log('Method:', options.method || 'GET');
-  log('Headers:', options.headers || {});
+  
+  // Add authorization header if EXPORT_TOKEN is available
+  if (process.env.EXPORT_TOKEN) {
+    options.headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${process.env.EXPORT_TOKEN}`
+    };
+  }
+  
+  log('Headers:', {...options.headers, Authorization: options.headers?.Authorization ? '(set)' : '(not set)'});
   
   try {
     log('Starting request...');
