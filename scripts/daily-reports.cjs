@@ -171,41 +171,147 @@ async function generateReport() {
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="UTF-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .header h1 { color: #1a1a1a; margin-bottom: 10px; }
-          .summary { background: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
-          .summary p { margin: 10px 0; }
-          .cost { color: #d35400; font-weight: bold; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
-          td { padding: 10px; border-bottom: 1px solid #ddd; }
-          tr:nth-child(even) { background: #f9f9f9; }
-          .footer { margin-top: 30px; font-size: 0.9em; color: #666; text-align: center; }
+          body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+          }
+          .container { 
+            max-width: 800px; 
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          }
+          .header { 
+            text-align: center; 
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+          }
+          .logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+          }
+          .header h1 { 
+            color: #2c3e50; 
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+          }
+          .header h2 {
+            color: #34495e;
+            margin: 10px 0 0 0;
+            font-size: 22px;
+            font-weight: 500;
+          }
+          .summary { 
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border: 1px solid #e1e4e8;
+          }
+          .summary p { 
+            margin: 15px 0;
+            font-size: 16px;
+          }
+          .cost { 
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 18px;
+          }
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0;
+            font-size: 15px;
+          }
+          th { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 500;
+            border-radius: 4px 4px 0 0;
+          }
+          td { 
+            padding: 12px; 
+            border-bottom: 1px solid #eee;
+          }
+          tr:nth-child(even) { 
+            background: #f8f9fa;
+          }
+          tr:hover {
+            background: #f1f3f5;
+          }
+          .section-title {
+            color: #2c3e50;
+            margin: 35px 0 20px 0;
+            font-size: 20px;
+            font-weight: 500;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+          }
+          .footer { 
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+          }
+          .footer p {
+            margin: 5px 0;
+          }
+          .rtl {
+            direction: rtl;
+            text-align: right;
+          }
+          .ltr {
+            direction: ltr;
+            text-align: left;
+          }
+          @media print {
+            body {
+              background: white;
+            }
+            .container {
+              box-shadow: none;
+              margin: 0;
+              padding: 20px;
+            }
+          }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
             <h1>The Castle Berlin</h1>
-            <h2>Daily Wastage Report</h2>
+            <h2>Daily Wastage Report / דוח בזבוז יומי</h2>
           </div>
           
           <div class="summary">
-            <p><strong>Period:</strong> ${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')} UTC</p>
-            <p><strong>Total Entries:</strong> ${validEntries.length}</p>
-            <p><strong>Total Cost:</strong> <span class="cost">€${totalCost.toFixed(2)}</span></p>
+            <p><strong>Period / תקופה:</strong> ${startDate.format('DD.MM.YYYY HH:mm')} - ${endDate.format('DD.MM.YYYY HH:mm')} UTC</p>
+            <p><strong>Total Entries / סך הכל רשומות:</strong> ${validEntries.length}</p>
+            <p><strong>Total Cost / עלות כוללת:</strong> <span class="cost">€${totalCost.toFixed(2)}</span></p>
           </div>
 
-          <h3>Summary by Item</h3>
+          <h3 class="section-title">Summary by Item / סיכום לפי פריט</h3>
           <table>
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Total Cost</th>
+                <th>Item / פריט</th>
+                <th>Quantity / כמות</th>
+                <th>Total Cost / עלות כוללת</th>
               </tr>
             </thead>
             <tbody>
@@ -231,15 +337,15 @@ async function generateReport() {
             </tbody>
           </table>
 
-          <h3>Detailed Wastage Report</h3>
+          <h3 class="section-title">Detailed Wastage Report / דוח בזבוז מפורט</h3>
           <table>
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Employee</th>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Reason</th>
+                <th>Time / זמן</th>
+                <th>Employee / עובד</th>
+                <th>Item / פריט</th>
+                <th>Quantity / כמות</th>
+                <th>Reason / סיבה</th>
               </tr>
             </thead>
             <tbody>
@@ -249,15 +355,15 @@ async function generateReport() {
                   <td>${e.employee_name}</td>
                   <td>${e.item_name}</td>
                   <td>${e.quantity} ${e.unit}</td>
-                  <td>${e.reason || 'Not specified'}</td>
+                  <td>${e.reason || 'Not specified / לא צוין'}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
 
           <div class="footer">
-            <p>A CSV file with detailed entries is attached to this email.</p>
-            <p>Generated by The Castle Wastage Tracker</p>
+            <p>A CSV file with detailed entries is attached to this email / קובץ CSV עם רשומות מפורטות מצורף לדוא"ל זה</p>
+            <p>Generated by The Castle Wastage Tracker / נוצר על ידי מערכת מעקב בזבוז של The Castle</p>
           </div>
         </div>
       </body>
