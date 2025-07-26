@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
 const seedCosts = require('./scripts/seedCosts');
 
@@ -15,17 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static front-end
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
-  resave: true,
-  saveUninitialized: false,
-  cookie: {
-    secure: false, // Set to true only if you're using HTTPS
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+// Session configuration will be set up after database initialization
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -344,11 +335,39 @@ async function initialize() {
 
         CREATE INDEX IF NOT EXISTS menu_items_category_idx ON menu_items(category);
         CREATE INDEX IF NOT EXISTS menu_items_availability_idx ON menu_items(is_available);
+
+        -- Create sessions table for PostgreSQL session store
+        CREATE TABLE IF NOT EXISTS sessions (
+          sid VARCHAR NOT NULL COLLATE "default",
+          sess JSON NOT NULL,
+          expire TIMESTAMP(6) NOT NULL
+        )
+        WITH (OIDS=FALSE);
+
+        ALTER TABLE sessions ADD CONSTRAINT sessions_pkey PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE;
+        CREATE INDEX IF NOT EXISTS IDX_sessions_expire ON sessions (expire);
       `);
     });
     console.log('✅ Database tables ready');
 
-    // 3. Seed costs data
+    // 3. Configure session store with PostgreSQL
+    app.use(session({
+      store: new pgSession({
+        pool: db,
+        tableName: 'sessions'
+      }),
+      secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      }
+    }));
+    console.log('✅ Session store configured with PostgreSQL');
+
+    // 4. Seed costs data
     await seedCosts(db);
     
     // 4. Start server
@@ -512,12 +531,31 @@ app.get('/api/entries', async (req, res) => {
         AND w.timestamp < $2::timestamptz
       `;
       params.push(start, end);
+      console.log('Query parameters:', params);
+    } else {
+      console.log('No date filtering applied - returning all entries');
     }
 
     // Always order by timestamp
     query += ` ORDER BY w.timestamp DESC`;
     
+    console.log('Final query:', query);
     const { rows } = await db.query(query, params);
+    console.log(`Found ${rows.length} entries`);
+    
+    // Log first few entries for debugging
+    if (rows.length > 0) {
+      console.log('First 3 entries:');
+      rows.slice(0, 3).forEach((row, index) => {
+        console.log(`Entry ${index + 1}:`, {
+          timestamp: row.timestamp,
+          employee: row.employee_name,
+          item: row.item_name,
+          quantity: row.quantity
+        });
+      });
+    }
+    
     res.json({ entries: rows });
   } catch (err) {
     console.error('Error fetching entries:', err);
