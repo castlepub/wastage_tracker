@@ -1,0 +1,45 @@
+name: Weekly Wastage Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      weeks_back:
+        description: 'How many weeks back (0 = last week, 1 = two weeks ago, etc.)'
+        required: false
+        default: '0'
+        type: string
+
+jobs:
+  send-weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm install nodemailer dayjs node-fetch
+        echo "Checking scripts directory:"
+        ls -la scripts/
+        echo "Verifying weekly-report.js exists:"
+        test -f scripts/weekly-report.js || exit 1
+
+    - name: Send weekly report
+      env:
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        REPORT_EMAIL: 'thecastle.orders@gmail.com'
+        APP_URL: ${{ secrets.APP_URL }}
+        EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
+        WEEKS_BACK: ${{ inputs.weeks_back }}
+      run: |
+        echo "Running weekly report script..."
+        echo "Weeks back: $WEEKS_BACK"
+        node scripts/weekly-report.js 

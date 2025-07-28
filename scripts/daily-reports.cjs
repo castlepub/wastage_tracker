@@ -88,12 +88,9 @@ async function generateReport() {
       // If a date is provided, use it
       startDate = dayjs.utc(process.env.REPORT_DATE).startOf('day').add(6, 'hour');
     } else {
-      // Default to yesterday 6 AM UTC
+      // Default to yesterday 6 AM UTC (always report on the previous day)
       const now = dayjs().utc();
-      const today6AM = now.startOf('day').add(6, 'hour');
-      startDate = now.isBefore(today6AM) 
-        ? today6AM.subtract(24, 'hour')
-        : today6AM;
+      startDate = now.subtract(1, 'day').startOf('day').add(6, 'hour');
     }
     
     const endDate = startDate.add(24, 'hour');
