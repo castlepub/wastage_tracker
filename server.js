@@ -5,7 +5,6 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
 const seedCosts = require('./scripts/seedCosts');
 
@@ -16,7 +15,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static front-end
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration will be set up after database initialization
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -336,36 +345,12 @@ async function initialize() {
         CREATE INDEX IF NOT EXISTS menu_items_category_idx ON menu_items(category);
         CREATE INDEX IF NOT EXISTS menu_items_availability_idx ON menu_items(is_available);
 
-        -- Create sessions table for PostgreSQL session store
-        CREATE TABLE IF NOT EXISTS sessions (
-          sid VARCHAR NOT NULL COLLATE "default",
-          sess JSON NOT NULL,
-          expire TIMESTAMP(6) NOT NULL
-        )
-        WITH (OIDS=FALSE);
 
-        ALTER TABLE sessions ADD CONSTRAINT sessions_pkey PRIMARY KEY (sid) NOT DEFERRABLE INITIALLY IMMEDIATE;
-        CREATE INDEX IF NOT EXISTS IDX_sessions_expire ON sessions (expire);
       `);
     });
     console.log('✅ Database tables ready');
 
-    // 3. Configure session store with PostgreSQL
-    app.use(session({
-      store: new pgSession({
-        pool: db,
-        tableName: 'sessions'
-      }),
-      secret: process.env.SESSION_SECRET || 'castle-wastage-secret',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-      }
-    }));
-    console.log('✅ Session store configured with PostgreSQL');
+    // 3. Session store configuration removed (moved to top of file)
 
     // 4. Seed costs data
     await seedCosts(db);
