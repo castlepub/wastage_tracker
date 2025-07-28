@@ -26,7 +26,7 @@ if (!GMAIL_APP_PASSWORD) {
 }
 
 // Create email transporter
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
   secure: false,
