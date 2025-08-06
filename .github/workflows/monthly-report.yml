@@ -10,12 +10,8 @@ on:
         required: false
         type: string
 
-permissions:
-  issues: write
-  contents: read
-
 jobs:
-  generate-report:
+  send-report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -31,40 +27,19 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci
+        npm install nodemailer dayjs node-fetch
+        echo "Checking scripts directory:"
         ls -la scripts/
+        echo "Verifying monthly-report.js exists:"
+        test -f scripts/monthly-report.js || exit 1
 
-    - name: Generate report
+    - name: Send email report
       env:
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        REPORT_EMAIL: 'thecastle.orders@gmail.com'
         APP_URL: ${{ secrets.APP_URL }}
         EXPORT_TOKEN: ${{ secrets.EXPORT_TOKEN }}
         REPORT_DATE: ${{ inputs.report_date }}
       run: |
         echo "Running monthly report script..."
-        node scripts/monthly-report.js > report.txt
-        cat report.txt
-
-    - name: Create Issue with Report
-      if: success()
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const fs = require('fs');
-          try {
-            const reportContent = fs.readFileSync('report.txt', 'utf8');
-            const today = new Date().toISOString().split('T')[0];
-            const reportDate = '${{ inputs.report_date }}' || 'last-month';
-            
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Monthly Wastage Report - ${reportDate === 'last-month' ? today : reportDate}`,
-              body: '```\n' + reportContent + '\n```',
-              labels: ['report', 'monthly', 'automated']
-            });
-            console.log('✅ Issue created successfully');
-          } catch (error) {
-            console.error('❌ Failed to create issue:', error.message);
-            // Don't fail the workflow, just log the error
-            core.setFailed(`Failed to create issue: ${error.message}`);
-          } 
+        node scripts/monthly-report.js 
