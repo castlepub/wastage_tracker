@@ -24,14 +24,24 @@ if (!config.EXPORT_TOKEN) {
   process.exit(1);
 }
 
-// Calculate time window - for last month's report
-const now = dayjs().utc();
-const firstDayLastMonth = now.subtract(1, 'month').startOf('month');
-const lastDayLastMonth = now.subtract(1, 'month').endOf('month');
+// Calculate time window - for last month's report or specified date
+let firstDayLastMonth, lastDayLastMonth;
+
+if (process.env.REPORT_DATE) {
+  // If a specific date is provided, use that month
+  const reportDate = dayjs.utc(process.env.REPORT_DATE);
+  firstDayLastMonth = reportDate.startOf('month');
+  lastDayLastMonth = reportDate.endOf('month');
+} else {
+  // Default to last month
+  const now = dayjs().utc();
+  firstDayLastMonth = now.subtract(1, 'month').startOf('month');
+  lastDayLastMonth = now.subtract(1, 'month').endOf('month');
+}
 
 // Print startup information
 console.log('\n=== Monthly Report Generation ===');
-console.log('Current time (UTC):', now.format('YYYY-MM-DD HH:mm:ss'));
+console.log('Current time (UTC):', config.now.format('YYYY-MM-DD HH:mm:ss'));
 console.log('Reporting period:');
 console.log('From:', firstDayLastMonth.format('YYYY-MM-DD HH:mm'), 'UTC');
 console.log('To:  ', lastDayLastMonth.format('YYYY-MM-DD HH:mm'), 'UTC\n');
